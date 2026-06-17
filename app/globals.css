@@ -1,0 +1,983 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 13% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+    --primary: 213 94% 39%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 220 13% 13%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 213 94% 95%;
+    --accent-foreground: 213 94% 30%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 213 94% 39%;
+    --radius: 0.5rem;
+    --chart-1: 213 94% 39%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 27 96% 61%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 280 65% 60%;
+  }
+
+  [data-theme="dark"] {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 213 94% 55%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 222 47% 14%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 222 47% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 213 94% 18%;
+    --accent-foreground: 213 94% 75%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 210 40% 96%;
+    --border: 222 47% 18%;
+    --input: 222 47% 18%;
+    --ring: 213 94% 55%;
+    --chart-1: 213 94% 55%;
+    --chart-2: 142 71% 55%;
+    --chart-3: 27 96% 65%;
+    --chart-4: 0 84% 65%;
+    --chart-5: 280 65% 65%;
+  }
+
+  /* Material Theme - Google Material Design inspired */
+  [data-theme="material"] {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+    --primary: 213 90% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 13%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 213 90% 95%;
+    --accent-foreground: 213 90% 30%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 213 90% 50%;
+    --radius: 0.75rem;
+    --chart-1: 213 90% 50%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 27 96% 61%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 280 65% 60%;
+  }
+
+  /* Glassmorphism Theme - Frosted glass with depth */
+  [data-theme="glassmorphism"] {
+    --background: 220 20% 95%;
+    --foreground: 220 20% 15%;
+    --card: 220 20% 98%;
+    --card-foreground: 220 20% 15%;
+    --popover: 220 20% 98%;
+    --popover-foreground: 220 20% 15%;
+    --primary: 213 80% 50%;
+    --primary-foreground: 220 20% 98%;
+    --secondary: 220 20% 92%;
+    --secondary-foreground: 220 20% 15%;
+    --muted: 220 20% 92%;
+    --muted-foreground: 220 10% 50%;
+    --accent: 213 80% 93%;
+    --accent-foreground: 213 80% 30%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 20% 98%;
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 213 80% 50%;
+    --radius: 1rem;
+    --chart-1: 213 80% 50%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 27 96% 61%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 280 65% 60%;
+  }
+
+  /* Aurora Theme - Purple & Cyan */
+  [data-theme="aurora"] {
+    --background: 260 30% 8%;
+    --foreground: 210 40% 96%;
+    --card: 260 30% 12%;
+    --card-foreground: 210 40% 96%;
+    --popover: 260 30% 12%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 280 84% 60%;
+    --primary-foreground: 260 30% 8%;
+    --secondary: 180 90% 50%;
+    --secondary-foreground: 260 30% 8%;
+    --muted: 260 30% 20%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 280 84% 35%;
+    --accent-foreground: 280 84% 85%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 96%;
+    --border: 260 30% 20%;
+    --input: 260 30% 20%;
+    --ring: 280 84% 60%;
+    --chart-1: 280 84% 60%;
+    --chart-2: 180 90% 50%;
+    --chart-3: 60 100% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 340 100% 60%;
+  }
+
+  /* Ocean Theme - Deep Blue */
+  [data-theme="ocean"] {
+    --background: 200 40% 5%;
+    --foreground: 210 40% 96%;
+    --card: 200 40% 10%;
+    --card-foreground: 210 40% 96%;
+    --popover: 200 40% 10%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 200 100% 45%;
+    --primary-foreground: 200 40% 5%;
+    --secondary: 170 76% 50%;
+    --secondary-foreground: 200 40% 5%;
+    --muted: 200 40% 18%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 200 100% 25%;
+    --accent-foreground: 200 100% 80%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 96%;
+    --border: 200 40% 18%;
+    --input: 200 40% 18%;
+    --ring: 200 100% 45%;
+    --chart-1: 200 100% 45%;
+    --chart-2: 170 76% 50%;
+    --chart-3: 120 80% 45%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 280 65% 60%;
+  }
+
+  /* Forest Theme - Green & Earth */
+  [data-theme="forest"] {
+    --background: 120 20% 8%;
+    --foreground: 110 20% 95%;
+    --card: 120 20% 12%;
+    --card-foreground: 110 20% 95%;
+    --popover: 120 20% 12%;
+    --popover-foreground: 110 20% 95%;
+    --primary: 120 60% 45%;
+    --primary-foreground: 120 20% 8%;
+    --secondary: 30 90% 55%;
+    --secondary-foreground: 120 20% 8%;
+    --muted: 120 20% 20%;
+    --muted-foreground: 110 20% 70%;
+    --accent: 120 60% 25%;
+    --accent-foreground: 120 60% 85%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 110 20% 95%;
+    --border: 120 20% 20%;
+    --input: 120 20% 20%;
+    --ring: 120 60% 45%;
+    --chart-1: 120 60% 45%;
+    --chart-2: 30 90% 55%;
+    --chart-3: 200 80% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 40 100% 50%;
+  }
+  
+  /* Skeuomorphic Theme - Tactile Oak & Vintage Parchment */
+  [data-theme="skeuomorphic"] {
+    --background: 28 40% 12%;
+    --foreground: 30 25% 15%;
+    --card: 38 48% 93%;
+    --card-foreground: 30 25% 15%;
+    --popover: 38 48% 93%;
+    --popover-foreground: 30 25% 15%;
+    --primary: 28 65% 25%;
+    --primary-foreground: 38 48% 98%;
+    --secondary: 32 30% 82%;
+    --secondary-foreground: 30 25% 15%;
+    --muted: 36 20% 86%;
+    --muted-foreground: 30 15% 42%;
+    --accent: 38 50% 88%;
+    --accent-foreground: 28 65% 20%;
+    --destructive: 5 60% 35%;
+    --destructive-foreground: 38 48% 98%;
+    --border: 32 35% 72%;
+    --input: 36 28% 85%;
+    --ring: 28 65% 25%;
+    --radius: 0.375rem;
+    --chart-1: 28 65% 25%;
+    --chart-2: 38 50% 50%;
+    --chart-3: 12 70% 35%;
+    --chart-4: 160 50% 30%;
+    --chart-5: 200 50% 30%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(213, 94%, 39%) 0%, hsl(184, 91%, 34%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(213, 94%, 10%) 0%, hsl(184, 91%, 14%) 50%, hsl(213, 94%, 8%) 100%);
+  }
+
+  /* Premium Button Animations */
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .btn-premium::before {
+    content: '';
+    @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-300;
+  }
+
+  .btn-premium:hover::before {
+    @apply opacity-10;
+  }
+
+  .btn-premium:active {
+    @apply scale-95;
+  }
+
+  .btn-glow {
+    @apply btn-premium shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/70 transition-all;
+  }
+
+  .btn-smooth {
+    @apply btn-premium hover:scale-105 active:scale-95 transition-transform;
+  }
+
+  .btn-pulse {
+    @apply btn-premium animate-pulse-slow;
+  }
+
+  /* Enhanced Button Ripple Effect */
+  .btn-ripple {
+    @apply relative overflow-visible;
+    position: relative;
+  }
+
+  .btn-ripple::after {
+    content: '';
+    @apply absolute top-1/2 left-1/2 w-8 h-8 bg-white rounded-full opacity-0 transform -translate-x-1/2 -translate-y-1/2;
+    animation: none;
+  }
+
+  .btn-ripple:active::after {
+    animation: ripple 0.6s ease-out;
+  }
+
+  /* Gradient Button Animation */
+  .btn-gradient {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background-position: 200% 0;
+    @apply shadow-lg shadow-primary/40;
+  }
+
+  /* Elevated Button with Depth */
+  .btn-elevated {
+    @apply transition-all duration-200 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:shadow-sm active:translate-y-0;
+  }
+
+  /* Icon Button Enhanced */
+  .btn-icon-enhanced {
+    @apply transition-all duration-200 hover:scale-110 active:scale-95;
+  }
+
+  .btn-icon-enhanced svg {
+    @apply transition-transform duration-200;
+  }
+
+  .btn-icon-enhanced:hover svg {
+    @apply animate-spin-slow;
+  }
+
+  /* Enhanced Card Hover */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/50;
+  }
+
+  .card-glow {
+    @apply card-hover hover:shadow-primary/20 hover:shadow-2xl;
+  }
+
+  /* Sidebar Enhancements */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 relative overflow-hidden;
+  }
+
+  .sidebar-link::before {
+    content: '';
+    @apply absolute left-0 top-0 h-full w-1 bg-primary translate-x-[-4px] transition-all duration-200;
+  }
+
+  .sidebar-link:hover::before {
+    @apply translate-x-0;
+  }
+
+  .sidebar-link-active {
+    @apply bg-accent text-accent-foreground shadow-md;
+  }
+
+  .sidebar-link-active::before {
+    @apply translate-x-0 bg-accent-foreground;
+  }
+
+  /* Animation Classes */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .animate-bounce-soft {
+    animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-float-in {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Scrollbar Styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+    transition: background-color 0.2s;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--border) / 0.8);
+  }
+
+  /* Premium Inputs */
+  .input-premium {
+    @apply transition-all duration-200 border-border focus:border-primary focus:ring-2 focus:ring-primary/30;
+  }
+
+  /* Gradient Overlays */
+  .gradient-overlay {
+    @apply relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-transparent before:to-black/10 before:pointer-events-none;
+  }
+
+  /* Shimmer Effect Background */
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--background)) 0%,
+      hsl(var(--card)) 50%,
+      hsl(var(--background)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Glass Morphism */
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20 rounded-xl;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-md bg-black/10 border border-black/20 rounded-xl;
+  }
+
+  /* Glassmorphism Theme Overrides */
+  [data-theme="glassmorphism"] .card-hover,
+  [data-theme="glassmorphism"] [class*="Card"] {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background: hsl(var(--card) / 0.7);
+    border: 1px solid hsl(var(--border) / 0.4);
+    box-shadow: 0 8px 32px hsl(var(--foreground) / 0.06);
+  }
+
+  [data-theme="glassmorphism"] .sidebar-link {
+    backdrop-filter: blur(8px);
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  [data-theme="glassmorphism"] aside {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: hsl(var(--background) / 0.8);
+  }
+
+  /* Material Theme Overrides - Elevation Shadows */
+  [data-theme="material"] .card-hover,
+  [data-theme="material"] [class*="Card"] {
+    box-shadow: 0 1px 3px hsl(var(--foreground) / 0.08), 0 1px 2px hsl(var(--foreground) / 0.06);
+    border: none;
+    transition: box-shadow 0.3s ease;
+  }
+
+  [data-theme="material"] .card-hover:hover,
+  [data-theme="material"] [class*="Card"]:hover {
+    box-shadow: 0 6px 16px hsl(var(--foreground) / 0.1), 0 2px 4px hsl(var(--foreground) / 0.06);
+  }
+
+  [data-theme="material"] button[class*="shadow"] {
+    box-shadow: 0 1px 2px hsl(var(--foreground) / 0.1);
+  }
+
+  [data-theme="material"] button[class*="shadow"]:hover {
+    box-shadow: 0 2px 4px hsl(var(--foreground) / 0.15);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ripple {
+  to {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.kannada-text {
+  font-family: 'Noto Sans Kannada', sans-serif;
+}
+
+.highlight {
+  background: hsl(48, 100%, 88%);
+  color: hsl(33, 100%, 25%);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+[data-theme="dark"] .highlight,
+[data-theme="aurora"] .highlight,
+[data-theme="ocean"] .highlight,
+[data-theme="forest"] .highlight {
+  background: hsl(48, 90%, 20%);
+  color: hsl(48, 100%, 80%);
+}
+
+/* ==========================================================================
+   HIGH-FIDELITY SKEUOMORPHIC STYLING SYSTEM
+   ========================================================================== */
+
+/* 1. Procedural Walnut Wood Desk Backdrop */
+[data-theme="skeuomorphic"] body,
+[data-theme="skeuomorphic"] .bg-background {
+  background-color: #271a0c !important;
+  background-image: 
+    /* Horizontal wood grain lines */
+    linear-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    /* Vertical wood plank separators every 260px */
+    linear-gradient(90deg, rgba(0, 0, 0, 0.45) 4px, transparent 4px),
+    /* Warm glowing desktop desk light */
+    radial-gradient(circle at 50% 30%, rgba(68, 46, 26, 0.3) 0%, rgba(12, 8, 4, 0.8) 100%),
+    /* Micro-fine wood stripes */
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 2px, transparent 2px, transparent 10px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 4px, transparent 4px, transparent 12px),
+    /* Rich wooden undertones */
+    linear-gradient(to right, #1d1208, #2a1a0c, #22150a, #33200f, #23160b, #1d1208) !important;
+  background-size: 100% 240px, 16px 16px, 260px 100%, 100% 100%, 140px 100%, 80px 100%, 1440px 100% !important;
+  background-attachment: fixed !important;
+  color: #2b1f14 !important;
+}
+
+/* 2. Leather Binder Navigation Sidebar */
+[data-theme="skeuomorphic"] aside,
+[data-theme="skeuomorphic"] .sidebar {
+  background-color: #3b2314 !important;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0),
+    radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 0),
+    linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 16px),
+    linear-gradient(to left, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 8px),
+    linear-gradient(to bottom, #4c2f1b, #3b2314, #26160c) !important;
+  background-size: 8px 8px, 6px 6px, 100% 100%, 100% 100%, 100% 100% !important;
+  border-right: 4px solid #1c1007 !important;
+  border-left: 2px solid #57341e !important;
+  box-shadow: 
+    5px 0 15px rgba(0, 0, 0, 0.5), 
+    12px 0 30px rgba(0, 0, 0, 0.3) !important;
+  position: relative;
+}
+
+[data-theme="skeuomorphic"] aside::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 14px;
+  width: 1px;
+  border-left: 1px dashed rgba(205, 164, 94, 0.35); /* Brass stitching */
+  pointer-events: none;
+}
+
+[data-theme="skeuomorphic"] .sidebar-link {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+[data-theme="skeuomorphic"] .sidebar-link:hover {
+  background-color: rgba(205, 164, 94, 0.1) !important;
+  border-color: rgba(205, 164, 94, 0.2) !important;
+  color: #f5ebd6 !important;
+}
+
+[data-theme="skeuomorphic"] .sidebar-link-active {
+  background: linear-gradient(135deg, #8b5a2b 0%, #6e441f 100%) !important;
+  border-color: #cda45e !important;
+  color: #ffffff !important;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 3. Polished Mahogany Header Bar */
+[data-theme="skeuomorphic"] nav {
+  background: linear-gradient(to bottom, #422817 0%, #301b0f 75%, #1f1008 100%) !important;
+  border-bottom: 4px solid #140a04 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="skeuomorphic"] nav span[class*="text-foreground"],
+[data-theme="skeuomorphic"] nav a {
+  color: #ebdcc3 !important;
+  text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="skeuomorphic"] nav a:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 4. Tactile Parchment Paper Cards */
+[data-theme="skeuomorphic"] .card,
+[data-theme="skeuomorphic"] [class*="Card"],
+[data-theme="skeuomorphic"] .skeuo-card {
+  background: linear-gradient(150deg, #faf6eb 0%, #f5ebd3 70%, #ebd8ab 100%) !important;
+  color: #271a0c !important;
+  border: 1px solid #c9b488 !important;
+  border-bottom: 2px solid #bda36e !important;
+  border-radius: 6px !important;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.2), 
+    0 6px 14px -3px rgba(0, 0, 0, 0.4), 
+    0 16px 28px -6px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+  position: relative;
+  overflow: visible;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+[data-theme="skeuomorphic"] .card *,
+[data-theme="skeuomorphic"] [class*="Card"] * {
+  color: #271a0c !important;
+}
+
+/* Sub-headings and muted texts inside paper cards */
+[data-theme="skeuomorphic"] .card [class*="text-muted-foreground"],
+[data-theme="skeuomorphic"] [class*="Card"] [class*="text-muted-foreground"] {
+  color: #634b33 !important;
+}
+
+/* Hover lift effect for 3D paper dossier */
+[data-theme="skeuomorphic"] .card-hover:hover,
+[data-theme="skeuomorphic"] .card:hover,
+[data-theme="skeuomorphic"] [class*="Card"]:hover {
+  transform: translateY(-5px) rotate(0.4deg) !important;
+  box-shadow: 
+    0 2px 5px rgba(0, 0, 0, 0.2),
+    0 12px 24px -4px rgba(0, 0, 0, 0.45),
+    0 26px 45px -8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 5. Satisfying 3D Brass Push Buttons */
+[data-theme="skeuomorphic"] button:not(.btn-ghost):not(.ThemeSwitcher):not([aria-haspopup="menu"]),
+[data-theme="skeuomorphic"] .btn-premium,
+[data-theme="skeuomorphic"] .skeuo-button {
+  background: linear-gradient(to bottom, #dfb944 0%, #c49a26 40%, #a67911 100%) !important;
+  color: #2e1f06 !important;
+  border: 1px solid #e7c35a !important;
+  border-top: 1px solid #fff3af !important;
+  border-bottom: 3px solid #785204 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  border-radius: 6px !important;
+  box-shadow: 
+    0 3px 0 #573b02, 
+    0 4px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.12s ease-in-out !important;
+  transform: translateY(0);
+}
+
+[data-theme="skeuomorphic"] button:not(.btn-ghost):not(.ThemeSwitcher):not([aria-haspopup="menu"]):hover,
+[data-theme="skeuomorphic"] .btn-premium:hover,
+[data-theme="skeuomorphic"] .skeuo-button:hover {
+  background: linear-gradient(to bottom, #ebd15e 0%, #d5aa2f 40%, #b8860b 100%) !important;
+  box-shadow: 
+    0 3px 0 #573b02,
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Push down effect */
+[data-theme="skeuomorphic"] button:not(.btn-ghost):not(.ThemeSwitcher):not([aria-haspopup="menu"]):active,
+[data-theme="skeuomorphic"] .btn-premium:active,
+[data-theme="skeuomorphic"] .skeuo-button:active {
+  transform: translateY(3px) !important;
+  border-bottom-width: 1px !important;
+  box-shadow: 
+    0 0 0 #573b02, 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.65) !important;
+}
+
+/* 6. Brushed Steel Secondary/Outline Buttons */
+[data-theme="skeuomorphic"] button[class*="border-input"],
+[data-theme="skeuomorphic"] button[class*="bg-background"],
+[data-theme="skeuomorphic"] button[class*="variant-outline"] {
+  background: linear-gradient(to bottom, #ebe9e4 0%, #dad6ce 40%, #b8b2a5 100%) !important;
+  color: #3b2a1a !important;
+  border: 1px solid #dfdeda !important;
+  border-top: 1px solid #fdfdfd !important;
+  border-bottom: 3px solid #827b6e !important;
+  box-shadow: 
+    0 3px 0 #696256, 
+    0 4px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="skeuomorphic"] button[class*="border-input"]:hover,
+[data-theme="skeuomorphic"] button[class*="bg-background"]:hover,
+[data-theme="skeuomorphic"] button[class*="variant-outline"]:hover {
+  background: linear-gradient(to bottom, #f3f1ec 0%, #e0dcd3 40%, #c4beaf 100%) !important;
+  box-shadow: 
+    0 3px 0 #696256, 
+    0 6px 12px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme="skeuomorphic"] button[class*="border-input"]:active,
+[data-theme="skeuomorphic"] button[class*="bg-background"]:active,
+[data-theme="skeuomorphic"] button[class*="variant-outline"]:active {
+  transform: translateY(3px) !important;
+  border-bottom-width: 1px !important;
+  box-shadow: 
+    0 0 0 #696256, 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 7. Engraved Input Slots */
+[data-theme="skeuomorphic"] input,
+[data-theme="skeuomorphic"] textarea,
+[data-theme="skeuomorphic"] select,
+[data-theme="skeuomorphic"] .skeuo-inset {
+  background-color: #f7f3e6 !important;
+  color: #1a0f07 !important;
+  border: 1px solid #a6916c !important;
+  border-top: 1px solid #7c6c4f !important;
+  border-radius: 4px !important;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-theme="skeuomorphic"] input:focus,
+[data-theme="skeuomorphic"] textarea:focus,
+[data-theme="skeuomorphic"] select:focus {
+  background-color: #ffffff !important;
+  border-color: #8b5a2b !important;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 5px rgba(139, 90, 43, 0.4) !important;
+}
+
+/* 8. Metallic Badges & Tag Labels */
+[data-theme="skeuomorphic"] .badge,
+[data-theme="skeuomorphic"] span[class*="Badge"],
+[data-theme="skeuomorphic"] div[class*="Badge"] {
+  background: linear-gradient(135deg, #cda45e 0%, #b8860b 100%) !important;
+  color: #1a0f07 !important;
+  font-weight: 700 !important;
+  border: 1px solid #dfc79b !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 9. Bronze Scrollbar Knob */
+[data-theme="skeuomorphic"] ::-webkit-scrollbar-track {
+  background: #3b2314 !important;
+  border-left: 1px solid #1c1007 !important;
+}
+
+[data-theme="skeuomorphic"] ::-webkit-scrollbar-thumb {
+  background: #8b5a2b !important;
+  border: 2px solid #3b2314 !important;
+  border-radius: 6px !important;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.15) !important;
+}
+
+[data-theme="skeuomorphic"] ::-webkit-scrollbar-thumb:hover {
+  background: #a66d3a !important;
+}
+
+/* 10. Archival Accents (Metal clips and weathered ink rubber stamps) */
+.skeuo-metal-clip,
+.skeuo-stamp-digitized,
+.skeuo-stamp-confidential,
+.skeuo-rivet {
+  display: none !important;
+}
+
+[data-theme="skeuomorphic"] .skeuo-metal-clip {
+  display: block !important;
+  position: absolute;
+  top: -10px;
+  left: 40px;
+  width: 14px;
+  height: 42px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 7px;
+  background-color: transparent;
+  transform: rotate(8deg);
+  box-shadow: 
+    1px 2px 4px rgba(0,0,0,0.35),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.9);
+  z-index: 20;
+  pointer-events: none;
+}
+
+[data-theme="skeuomorphic"] .skeuo-metal-clip::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 1px;
+  width: 8px;
+  height: 28px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 4px;
+  border-bottom: 0;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="skeuomorphic"] .skeuo-stamp-digitized {
+  display: block !important;
+  position: absolute;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  pointer-events: none;
+  font-family: monospace, sans-serif;
+  mix-blend-mode: multiply;
+  opacity: 0.65;
+  user-select: none;
+  z-index: 10;
+  color: rgba(175, 20, 20, 0.8) !important;
+  border: 3px double rgba(175, 20, 20, 0.8) !important;
+  transform: rotate(-10deg);
+  top: 15px;
+  right: 15px;
+  font-size: 11px;
+  box-shadow: 0 0 0 1px rgba(175, 20, 20, 0.15);
+  background-image: radial-gradient(rgba(250, 246, 235, 0.7) 10%, transparent 11%),
+                    radial-gradient(rgba(250, 246, 235, 0.7) 10%, transparent 11%);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+}
+
+[data-theme="skeuomorphic"] .skeuo-stamp-confidential {
+  display: block !important;
+  position: absolute;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border-radius: 4px;
+  pointer-events: none;
+  font-family: monospace, sans-serif;
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+  user-select: none;
+  z-index: 10;
+  color: rgba(90, 25, 140, 0.75) !important;
+  border: 2px solid rgba(90, 25, 140, 0.75) !important;
+  transform: rotate(8deg);
+  bottom: 20px;
+  right: 25px;
+  font-size: 10px;
+  padding: 2px 5px;
+  background-image: radial-gradient(rgba(250, 246, 235, 0.6) 10%, transparent 12%);
+  background-size: 3px 3px;
+}
+
+[data-theme="skeuomorphic"] .skeuo-rivet {
+  display: inline-block !important;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle at 30% 30%, #ffd700 0%, #aa7c11 70%, #573b02 100%);
+  border-radius: 50%;
+  box-shadow: 
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 0.5px 0.5px rgba(255,255,255,0.5);
+  vertical-align: middle;
+}
+
+/* 11. Next-Level Skeuomorphic Chat Bubbles */
+[data-theme="skeuomorphic"] .divide-y + div [class*="rounded-bl-none"],
+[data-theme="skeuomorphic"] [class*="max-w-"][class*="rounded-bl-none"] {
+  background: linear-gradient(150deg, #fdfaf2 0%, #f7ecd4 80%, #ebdba5 100%) !important; /* Official scroll parchment */
+  color: #2b1f14 !important;
+  border: 1px solid #caba8c !important;
+  border-left: 5px solid #8b5a2b !important; /* Rich saddle-leather left spine */
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+  border-radius: 4px !important;
+  position: relative;
+}
+
+/* Add a tiny wax seal or ribbon stamp decoration to assistant chat bubble */
+[data-theme="skeuomorphic"] [class*="max-w-"][class*="rounded-bl-none"]::after {
+  content: '★';
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 10px;
+  color: #8b5a2b;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+[data-theme="skeuomorphic"] .divide-y + div [class*="rounded-br-none"],
+[data-theme="skeuomorphic"] [class*="max-w-"][class*="rounded-br-none"] {
+  background: linear-gradient(to bottom, #fcfcfc 0%, #e8edf5 100%) !important; /* Typed memo paper sheet */
+  color: #1a222d !important;
+  border: 1px solid #b8c8d4 !important;
+  border-right: 5px solid #3b82f6 !important; /* Modern blue ink binder spine */
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  border-radius: 4px !important;
+}
+
+/* Chat text styling override */
+[data-theme="skeuomorphic"] [class*="rounded-bl-none"] *,
+[data-theme="skeuomorphic"] [class*="rounded-br-none"] * {
+  color: inherit !important;
+}
+
+[data-theme="skeuomorphic"] [class*="rounded-bl-none"] [class*="text-muted-foreground"] {
+  color: #634c38 !important;
+}
+
+[data-theme="skeuomorphic"] [class*="rounded-br-none"] [class*="text-muted-foreground"] {
+  color: #4b5a6c !important;
+}
+
+/* 12. Polished Brass Timeline Rod & Gold Marker Pins */
+[data-theme="skeuomorphic"] .absolute.left-6.top-0.bottom-0.w-px {
+  width: 4px !important;
+  background: linear-gradient(90deg, #785204 0%, #ebd15e 40%, #c49a26 70%, #573b02 100%) !important; /* Polished 3D brass rod */
+  border-radius: 2px !important;
+  box-shadow: 
+    1px 0 3px rgba(0,0,0,0.5),
+    inset 1px 0 0 rgba(255,255,255,0.2) !important;
+  left: 23px !important; /* Align perfectly with larger brass nails */
+}
+
+[data-theme="skeuomorphic"] [class*="Timeline"] .absolute.left-4 {
+  left: 15px !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: radial-gradient(circle at 30% 30%, #fff0a5 0%, #dfb944 40%, #a67911 75%, #573b02 100%) !important; /* Solid gold/brass pin cap */
+  border: 1px solid #785204 !important;
+  box-shadow: 
+    0 1px 3px rgba(0,0,0,0.4),
+    inset 0 1px 0.5px rgba(255,255,255,0.6) !important;
+  border-radius: 50% !important;
+}
+
+[data-theme="skeuomorphic"] [class*="Timeline"] .absolute.left-4 svg {
+  display: none !important; /* Hide standard digital icons, show pure brass pins */
+}
+
+/* Timeline card theme styling */
+[data-theme="skeuomorphic"] [class*="Timeline"] .rounded-lg.border.p-4 {
+  background: linear-gradient(150deg, #faf7ed 0%, #f6ecd3 80%, #eddca7 100%) !important;
+  border: 1px solid #c9b488 !important;
+  box-shadow: 
+    0 2px 5px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.6) !important;
+  color: #271a0c !important;
+}
+
+

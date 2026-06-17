@@ -1,0 +1,374 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { expandQuery } from '@/lib/query-expansion';
+import { generateMockArchive, getMockArchives, TOTAL_RECORDS } from '@/lib/mock-data';
+import { checkRateLimit } from '@/lib/security/rate-limit';
+import { RetrievalService } from '@/lib/ai/retrieval-service';
+import { RerankingService } from '@/lib/ai/reranking-service';
+import { EmbeddingService } from '@/lib/ai/embedding-service';
+import { getApiKeyForFeature } from '@/lib/ai/keys-config';
+
+
+interface SearchFilters {
+  category?: string;
+  district?: string;
+  language?: string;
+  yearFrom?: number;
+  yearTo?: number;
+  ocrConfidence?: number;
+  docType?: string;
+  visibility?: string;
+  entityType?: string;
+  uploadedAfter?: string;
+  uploadedBefore?: string;
+  sourceType?: string;
+  ocrQuality?: string;
+}
+
+/**
+ * Generate query vector embedding on the server side
+ */
+async function generateQueryEmbedding(
+  query: string,
+  apiKey: string,
+  model: string = 'text-embedding-004',
+  version: string = 'v1'
+): Promise<number[] | null> {
+  try {
+    const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:embedContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: `models/${model}`,
+        content: {
+          parts: [{ text: query }],
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      console.warn(`Gemini embeddings API responded with status ${res.status}`);
+      return null;
+    }
+
+    const json = await res.json();
+    let embedding: number[] = json.embedding?.values || [];
+
+    if (embedding.length === 0) return null;
+
+    // If the embedding model does not return 1536 dimensions, keep semantic scoring in mock/fallback mode
+    // (return null so query_embedding is null and pgvector won't throw a length mismatch error).
+    if (embedding.length !== 1536) {
+      console.warn(`Embedding model returned ${embedding.length} dimensions, but database expects 1536. Running semantic scoring in mock/fallback mode.`);
+      return null;
+    }
+
+    return embedding;
+  } catch (err) {
+    console.error('Error generating query embedding on server:', err);
+    return null;
+  }
+}
+
+/**
+ * Fallback local scoring engine to rank mock/demo records when database is empty or offline
+ */
+function getScoredMockResults(
+  query: string,
+  expandedTerms: string[],
+  filters: SearchFilters,
+  limit: number,
+  page: number,
+  userRole: 'admin' | 'archivist' | 'researcher' | 'user' | 'guest' = 'guest'
+) {
+  const offset = (Math.max(page, 1) - 1) * limit;
+  
+  let allowedVisibility = ['public'];
+  if (userRole === 'researcher') {
+    allowedVisibility = ['public', 'restricted'];
+  } else if (userRole === 'admin' || userRole === 'archivist') {
+    allowedVisibility = ['public', 'restricted', 'private'];
+  }
+
+  const pool = Array.from({ length: 100 }, (_, index) => generateMockArchive(index))
+    .filter(archive => allowedVisibility.includes(archive.access_level || 'public'));
+
+  const scored = pool
+    .map((archive) => {
+      // 1. Keyword score: matching words ratio in title & description
+      const titleMatches = expandedTerms.filter(t => archive.title.toLowerCase().includes(t.toLowerCase())).length;
+      const descMatches = expandedTerms.filter(t => (archive.description || '').toLowerCase().includes(t.toLowerCase())).length;
+      const keyScore = Math.min(1.0, (titleMatches * 0.3 + descMatches * 0.1));
+
+      // 2. Metadata score
+      let metaScore = 0.0;
+      if (
+        filters.district && archive.district.name.toLowerCase().includes(filters.district.toLowerCase()) ||
+        filters.category && archive.category.slug.toLowerCase().includes(filters.category.toLowerCase())
+      ) {
+        metaScore = 1.0;
+      } else if (
+        expandedTerms.some(t => archive.district.name.toLowerCase().includes(t.toLowerCase())) ||
+        expandedTerms.some(t => archive.category.name.toLowerCase().includes(t.toLowerCase()))
+      ) {
+        metaScore = 0.8;
+      }
+
+      // 3. Entity score (mock entity mappings)
+      const entScore = expandedTerms.some(t => 
+        archive.title.toLowerCase().includes(t.toLowerCase()) || 
+        (archive.description || '').toLowerCase().includes(t.toLowerCase())
+      ) ? 0.6 : 0.0;
+
+      // 4. Semantic score (mock semantic value)
+      const semScore = keyScore > 0 ? parseFloat((0.4 + keyScore * 0.5).toFixed(2)) : 0.0;
+
+      // 5. Final weighted score
+      const finalScore = parseFloat(
+        (0.40 * semScore + 0.30 * keyScore + 0.20 * metaScore + 0.10 * entScore).toFixed(4)
+      );
+
+      // Build matched text highlight snippet
+      const matchedSnippet = archive.description || 'Archival land registry record cataloged in district vault.';
+
+      return {
+        document_id: archive.id,
+        title: archive.title,
+        summary: archive.description || 'Karnataka Archival Inscription',
+        matched_snippet: matchedSnippet,
+        page_number: 1,
+        district: archive.district.name,
+        category: archive.category.name,
+        language: archive.language,
+        year: archive.year,
+        file_type: archive.file_type,
+        ocr_confidence: archive.has_ocr ? 0.92 : 0.0,
+        semantic_score: semScore,
+        keyword_score: keyScore,
+        metadata_score: metaScore,
+        entity_score: entScore,
+        final_score: finalScore,
+        why_this_result: `This mock document matches ${Math.round(semScore * 100)}% semantically, contains keywords, and fits ${archive.district.name} district metadata.`
+      };
+    })
+    .filter(r => r.final_score > 0)
+    .sort((a, b) => b.final_score - a.final_score);
+
+  // Apply filters to mock results
+  let filtered = [...scored];
+  if (filters.district) {
+    filtered = filtered.filter(r => r.district.toLowerCase() === filters.district!.toLowerCase());
+  }
+  if (filters.category) {
+    filtered = filtered.filter(r => r.category.toLowerCase().includes(filters.category!.toLowerCase()));
+  }
+  if (filters.language) {
+    filtered = filtered.filter(r => r.language.toLowerCase() === filters.language!.toLowerCase());
+  }
+  if (filters.yearFrom) {
+    filtered = filtered.filter(r => r.year >= filters.yearFrom!);
+  }
+  if (filters.yearTo) {
+    filtered = filtered.filter(r => r.year <= filters.yearTo!);
+  }
+
+  return {
+    results: filtered.slice(offset, offset + limit),
+    total: filtered.length
+  };
+}
+
+export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+  const supabase = createServerSupabaseClient();
+
+  try {
+    // Rate limit check
+    const rateCheck = await checkRateLimit(req, { limit: 15, refillRate: 0.2 });
+    if (!rateCheck.success) {
+      return NextResponse.json({ success: false, error: 'Too many requests. Search API rate limit exceeded.' }, { status: 429 });
+    }
+
+    const body = await req.json();
+    const { 
+      query, 
+      limit = 20, 
+      page = 1, 
+      filters = {}, 
+      apiKey,
+      model = 'text-embedding-004',
+      version = 'v1'
+    } = body as {
+      query: string;
+      limit?: number;
+      page?: number;
+      filters?: SearchFilters;
+      apiKey?: string;
+      model?: string;
+      version?: string;
+    };
+
+    if (!query || typeof query !== 'string') {
+      return NextResponse.json({ success: false, error: 'Query parameter is required' }, { status: 400 });
+    }
+
+    // 1. Query Expansion (Multilingual spellings & synonyms)
+    const { expandedQuery, terms } = RetrievalService.expandQuery(query);
+
+    // 2. Server-side Embedding Generation (Optional, dimension safe)
+    let queryEmbedding: number[] | null = null;
+    const activeKey = apiKey || getApiKeyForFeature('search');
+    if (activeKey) {
+      const embRes = await EmbeddingService.generateEmbedding(query, activeKey, model);
+      if (embRes.status === 'generated') {
+        queryEmbedding = embRes.embedding;
+      }
+    }
+
+    // Get current user details and role
+    const { data: { user } } = await supabase.auth.getUser();
+    let userRole: 'admin' | 'archivist' | 'researcher' | 'user' | 'guest' = 'guest';
+    if (user) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (profile?.role) {
+        userRole = profile.role as any;
+      }
+    }
+
+    // 3. Query database using RetrievalService & RerankingService
+    let searchResults: any[] = [];
+    let totalResults = 0;
+    let modeUsed = queryEmbedding ? 'Hybrid Search' : 'Keyword + Meta Fallback';
+    let isMockMode = false;
+
+    try {
+      const retrieved = await RetrievalService.retrieveRelevantChunks(
+        query,
+        queryEmbedding,
+        {
+          district: filters.district,
+          category: filters.category,
+          language: filters.language,
+          yearFrom: filters.yearFrom ? parseInt(filters.yearFrom.toString()) : undefined,
+          yearTo: filters.yearTo ? parseInt(filters.yearTo.toString()) : undefined,
+          ocrConfidence: filters.ocrConfidence ? parseFloat(filters.ocrConfidence.toString()) : undefined,
+          docType: filters.docType,
+          visibility: filters.visibility as any,
+          entityType: filters.entityType,
+          sourceType: filters.sourceType,
+          ocrQuality: filters.ocrQuality
+        },
+        userRole,
+        user?.id,
+        limit
+      );
+
+      const reranked = RerankingService.rerank(
+        retrieved,
+        query,
+        filters.district,
+        filters.category
+      );
+
+      searchResults = reranked.map(item => ({
+        document_id: item.documentId,
+        title: item.title,
+        summary: item.summary,
+        matched_snippet: item.matchedSnippet,
+        page_number: item.pageNumber,
+        district: item.district,
+        category: item.category,
+        language: item.language,
+        year: item.year,
+        file_type: item.fileType,
+        ocr_confidence: item.ocrConfidence,
+        semantic_score: item.semanticScore,
+        keyword_score: item.keywordScore,
+        metadata_score: item.metadataScore,
+        entity_score: item.entityScore,
+        final_score: item.finalScore,
+        why_this_result: item.whyThisResult,
+        matched_entities: item.matchedEntities,
+        source_type: item.sourceType || 'uploaded',
+        source_name: item.sourceName || null,
+        source_url: item.sourceUrl || null,
+        source_license: item.sourceLicense || null,
+        source_attribution: item.sourceAttribution || null,
+        source_is_real: item.sourceIsReal || false,
+        retrieval_date: item.retrievalDate || null
+      }));
+      totalResults = searchResults.length;
+
+      // If no database hits, trigger local mock engine so demo doesn't show blank
+      if (searchResults.length === 0) {
+        const fallback = getScoredMockResults(query, terms, filters, limit, page, userRole);
+        searchResults = fallback.results;
+        totalResults = fallback.total;
+        modeUsed = 'Local Mock Fallback';
+        isMockMode = true;
+      }
+    } catch (dbErr) {
+      console.warn('Database hybrid search RPC failed, falling back to mock engine:', dbErr);
+      const fallback = getScoredMockResults(query, terms, filters, limit, page, userRole);
+      searchResults = fallback.results;
+      totalResults = fallback.total;
+      modeUsed = 'Local Mock Fallback';
+      isMockMode = true;
+    }
+
+    // 4. Save Search Logs (RLS compliant)
+    const responseTime = Date.now() - startTime;
+    const topScore = searchResults[0]?.final_score || 0.0;
+    
+    const { error: logError } = await supabase
+      .from('search_logs')
+      .insert([
+        {
+          user_id: user?.id || null,
+          query: query,
+          expanded_query: expandedQuery,
+          filters: filters,
+          result_count: totalResults,
+          response_time_ms: responseTime,
+          top_score: topScore
+        }
+      ]);
+
+    if (logError) {
+      console.warn('Failed to insert search log:', logError.message);
+    }
+
+    // 5. Aggregate Analytics details for dashboard
+    const uniqueDistricts = Array.from(new Set(searchResults.map(r => r.district))).filter(Boolean);
+    const matchedEntitiesCount = searchResults.filter(r => r.entity_score > 0).length;
+
+    return NextResponse.json({
+      success: true,
+      data: searchResults,
+      meta: {
+        total: totalResults,
+        page,
+        limit,
+        response_time_ms: responseTime,
+        search_mode: modeUsed,
+        expanded_query: expandedQuery,
+        top_score: topScore,
+        districts_count: uniqueDistricts.length,
+        entities_count: matchedEntitiesCount,
+        is_mock: isMockMode
+      }
+    });
+
+  } catch (error) {
+    console.error('Search API failure:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Internal Search Server Error' 
+    }, { status: 500 });
+  }
+}
