@@ -18,12 +18,6 @@ export function createServerSupabaseClient() {
     if (sbCookie) {
       const parsed = JSON.parse(sbCookie);
       token = parsed?.access_token;
-    } else {
-      const mockCookie = cookieStore.get('neurive-mock-session')?.value;
-      if (mockCookie) {
-        const parsed = JSON.parse(mockCookie);
-        token = parsed?.access_token;
-      }
     }
   } catch (err) {
     // cookies() can throw if called outside request context e.g. at build time
@@ -42,41 +36,6 @@ export function createServerSupabaseClient() {
       refresh_token: '',
     });
   }
-
-  const originalAuth = client.auth;
-  const customAuth = new Proxy(originalAuth, {
-    get(target, prop) {
-      if (prop === 'getUser') {
-        return async () => {
-          try {
-            const cookieStore = cookies();
-            const mockCookie = cookieStore.get('neurive-mock-session')?.value;
-            if (mockCookie) {
-              const parsed = JSON.parse(mockCookie);
-              return { data: { user: parsed.user }, error: null };
-            }
-          } catch {}
-
-          try {
-            return await target.getUser();
-          } catch (err) {
-            return { data: { user: null }, error: err };
-          }
-        };
-      }
-      const val = Reflect.get(target, prop);
-      if (typeof val === 'function') {
-        return val.bind(target);
-      }
-      return val;
-    }
-  });
-
-  Object.defineProperty(client, 'auth', {
-    get() {
-      return customAuth;
-    }
-  });
 
   return client;
 }

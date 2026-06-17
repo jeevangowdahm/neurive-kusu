@@ -139,6 +139,8 @@ export interface MockArchive {
   language: string;
   document_type: string;
   file_type: string;
+  file_url?: string;
+  thumbnail_url?: string;
   page_count: number;
   author: string;
   source: string;

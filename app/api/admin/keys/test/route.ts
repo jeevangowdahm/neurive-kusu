@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(req: NextRequest) {
   const supabase = createServerSupabaseClient();
 
   try {
+    // 0. Rate limiting
+    const rateCheck = await checkRateLimit(req, { limit: 10, refillRate: 0.2 });
+    if (!rateCheck.success) {
+      return NextResponse.json({ success: false, error: 'Too many requests. Rate limit exceeded.' }, { status: 429 });
+    }
+
     // 1. Authenticate user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
