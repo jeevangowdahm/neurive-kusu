@@ -18,10 +18,10 @@ export interface GraphEdge {
   strength: number;
   snippet?: string;
   page?: number;
-  source_entity?: string;
-  target_entity?: string;
-  source_doc?: string;
-  target_doc?: string;
+  source_entity?: string | null;
+  target_entity?: string | null;
+  source_doc?: string | null;
+  target_doc?: string | null;
   isDemo?: boolean;
 }
 
@@ -132,10 +132,10 @@ export class KnowledgeGraphService {
       const slicedEntities = filteredEntities.slice(0, nodeLimit);
       const slicedEntitiesIds = slicedEntities.map((e: any) => e.id);
 
-      // 3. Fetch and Filter Edges
+      // 3. Fetch and Filter Edges (using actual schema: entity_id_from, entity_id_to)
       let relQuery = supabaseClient
         .from('entity_relationships')
-        .select('*')
+        .select('id, entity_id_from, entity_id_to, relationship_type, relationship_weight, confidence_score, metadata')
         .limit(edgeLimit);
 
       if (minStrengthParam > 0) {
@@ -149,44 +149,31 @@ export class KnowledgeGraphService {
       const connectedNodeIds = new Set<string>();
 
       (dbRels || []).forEach((rel: any) => {
-        let isAllowed = false;
+        // Use actual schema: entity_id_from, entity_id_to, relationship_weight
+        const sourceId = rel.entity_id_from;
+        const targetId = rel.entity_id_to;
 
-        // Case 1: Entity-to-Entity relation
-        if (rel.source_entity_id && rel.target_entity_id) {
-          if (slicedEntitiesIds.includes(rel.source_entity_id) && slicedEntitiesIds.includes(rel.target_entity_id)) {
-            isAllowed = true;
-          }
-        }
-        // Case 2: Document-to-Document relation
-        else if (rel.source_document_id && rel.target_document_id) {
-          if (allowedDocIds.includes(rel.source_document_id) && allowedDocIds.includes(rel.target_document_id)) {
-            isAllowed = true;
-          }
-        }
-        // Case 3: Entity-to-Document relation
-        else if (rel.source_entity_id && rel.target_document_id) {
-          if (slicedEntitiesIds.includes(rel.source_entity_id) && allowedDocIds.includes(rel.target_document_id)) {
-            isAllowed = true;
-          }
-        }
+        // Check if both entities exist in our filtered set
+        const isAllowed = sourceId && targetId &&
+          slicedEntitiesIds.includes(sourceId) && slicedEntitiesIds.includes(targetId);
 
         if (isAllowed) {
           filteredEdges.push({
             id: rel.id,
-            source: rel.source_entity_id || rel.source_document_id,
-            target: rel.target_entity_id || rel.target_document_id,
+            source: sourceId,
+            target: targetId,
             type: rel.relationship_type,
-            strength: Number(rel.relationship_strength),
-            snippet: rel.evidence_snippet,
-            page: rel.page_number,
-            source_entity: rel.source_entity_id,
-            target_entity: rel.target_entity_id,
-            source_doc: rel.source_document_id,
-            target_doc: rel.target_document_id
+            strength: Number(rel.relationship_weight || 1.0),
+            snippet: rel.metadata?.evidence || '',
+            page: 1,
+            source_entity: sourceId,
+            target_entity: targetId,
+            source_doc: null,
+            target_doc: null
           });
-          
-          connectedNodeIds.add(rel.source_entity_id || rel.source_document_id);
-          connectedNodeIds.add(rel.target_entity_id || rel.target_document_id);
+
+          connectedNodeIds.add(sourceId);
+          connectedNodeIds.add(targetId);
         }
       });
 
