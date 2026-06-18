@@ -28,7 +28,7 @@ export class OCRService {
    */
   static async performOCR(fileUrl: string, fileType: string = 'pdf'): Promise<OCRResult> {
     try {
-      const apiKey = getApiKeyForFeature('agent');
+      const apiKey = getApiKeyForFeature('other');
       
       if (!apiKey) {
         console.warn('No Gemini API key found. Using sandboxed offline OCR mock.');

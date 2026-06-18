@@ -1,0 +1,497 @@
+// Karnataka Districts and Historical Data
+// All 31 districts with historical context and archive statistics
+
+export interface KarnatakaDistrict {
+  id: string;
+  name: string;
+  nameKannada: string;
+  division: 'Belagavi' | 'Kalaburagi' | 'Mysuru' | 'Bengaluru';
+  headquarters: string;
+  established: number;
+  area: number; // sq km
+  population: number;
+  historicalSignificance: string;
+  archivesCount: number;
+  notableRecords: string[];
+  coordinates: { lat: number; lng: number };
+}
+
+export const KARNATAKA_DISTRICTS: KarnatakaDistrict[] = [
+  {
+    id: 'bengaluru-urban',
+    name: 'Bengaluru Urban',
+    nameKannada: 'ಬೆಂಗಳೂರು ನಗರ',
+    division: 'Bengaluru',
+    headquarters: 'Bengaluru',
+    established: 1986,
+    area: 2196,
+    population: 9621551,
+    historicalSignificance: 'Capital of Karnataka, founded by Kempe Gowda I in 1537. Known as the Silicon Valley of India.',
+    archivesCount: 1245,
+    notableRecords: ['Bengaluru Petition 1791', 'Bangalore Fort Records', 'Cantonment Survey Maps'],
+    coordinates: { lat: 12.9716, lng: 77.5946 }
+  },
+  {
+    id: 'bengaluru-rural',
+    name: 'Bengaluru Rural',
+    nameKannada: 'ಬೆಂಗಳೂರು ಗ್ರಾಮೀಣ',
+    division: 'Bengaluru',
+    headquarters: 'Bengaluru',
+    established: 1986,
+    area: 2298,
+    population: 987257,
+    historicalSignificance: 'Contains ancient temples and inscriptions from the Ganga and Hoysala periods.',
+    archivesCount: 423,
+    notableRecords: ['Doddaballapur Land Records', 'Hosakote Temple Inscriptions'],
+    coordinates: { lat: 12.9250, lng: 77.5698 }
+  },
+  {
+    id: 'mysuru',
+    name: 'Mysuru',
+    nameKannada: 'ಮೈಸೂರು',
+    division: 'Mysuru',
+    headquarters: 'Mysuru',
+    established: 1947,
+    area: 6854,
+    population: 3061837,
+    historicalSignificance: 'Former capital of the Kingdom of Mysore under the Wadiyar dynasty. Site of the famous Mysore Palace.',
+    archivesCount: 2891,
+    notableRecords: ['Mysore Palace Archives', 'Wadiyar Genealogy', 'Dasara Festival Records', 'Tipu Sultan Correspondence'],
+    coordinates: { lat: 12.2958, lng: 76.6394 }
+  },
+  {
+    id: 'tumakuru',
+    name: 'Tumakuru',
+    nameKannada: 'ತುಮಕೂರು',
+    division: 'Bengaluru',
+    headquarters: 'Tumakuru',
+    established: 1956,
+    area: 4135,
+    population: 2678980,
+    historicalSignificance: 'Historical center for the Gangas and later the Vijayanagara Empire.',
+    archivesCount: 567,
+    notableRecords: ['Pavagada Fort Records', 'Madhugiri Inscriptions'],
+    coordinates: { lat: 13.3379, lng: 77.1173 }
+  },
+  {
+    id: 'mandya',
+    name: 'Mandya',
+    nameKannada: 'ಮಂಡ್ಯ',
+    division: 'Mysuru',
+    headquarters: 'Mandya',
+    established: 1939,
+    area: 4961,
+    population: 1805746,
+    historicalSignificance: 'Known as the sugar bowl of Karnataka, with ancient temples at Srirangapatna.',
+    archivesCount: 784,
+    notableRecords: ['Srirangapatna Battle Records', 'Tipu Sultan Death Site Archives'],
+    coordinates: { lat: 12.5218, lng: 76.8983 }
+  },
+  {
+    id: 'chamarajanagara',
+    name: 'Chamarajanagara',
+    nameKannada: 'ಚಾಮರಾಜನಗರ',
+    division: 'Mysuru',
+    headquarters: 'Chamarajanagara',
+    established: 1997,
+    area: 5102,
+    population: 1021796,
+    historicalSignificance: 'Named after Chamarajendra Wadiyar X. Gateway to wildlife sanctuaries.',
+    archivesCount: 312,
+    notableRecords: ['Bandipur Forest Records', 'Billigiri Ranga Temple Inscriptions'],
+    coordinates: { lat: 11.9264, lng: 76.9482 }
+  },
+  {
+    id: 'kodagu',
+    name: 'Kodagu',
+    nameKannada: 'ಕೊಡಗು',
+    division: 'Mysuru',
+    headquarters: 'Madikeri',
+    established: 1956,
+    area: 4102,
+    population: 554762,
+    historicalSignificance: 'Land of the Kodavas, with unique martial traditions. Capital of the Haleri Kingdom.',
+    archivesCount: 567,
+    notableRecords: ['Kodava Land Grants', 'Haleri Kingdom Chronicles', 'British Coorg Wars'],
+    coordinates: { lat: 12.3375, lng: 75.8069 }
+  },
+  {
+    id: 'hassan',
+    name: 'Hassan',
+    nameKannada: 'ಹಾಸನ',
+    division: 'Mysuru',
+    headquarters: 'Hassan',
+    established: 1886,
+    area: 6814,
+    population: 1774256,
+    historicalSignificance: 'Home to Hoysala architecture masterpiece temples at Belur, Halebidu, and Shravanabelagola.',
+    archivesCount: 1234,
+    notableRecords: ['Hoysala Temple Records', 'Shravanabelagola Gomateshwara Inscriptions', 'Belur Chennakeshava Temple Archives'],
+    coordinates: { lat: 12.9947, lng: 76.1003 }
+  },
+  {
+    id: 'chikmagaluru',
+    name: 'Chikmagaluru',
+    nameKannada: 'ಚಿಕ್ಕಮಗಳೂರು',
+    division: 'Mysuru',
+    headquarters: 'Chikmagaluru',
+    established: 1865,
+    area: 7201,
+    population: 1137975,
+    historicalSignificance: 'Birthplace of the Hoysala dynasty. Known for coffee plantations since 1670.',
+    archivesCount: 678,
+    notableRecords: ['Coffee Plantation Origins', 'Hoysala Origin Inscriptions', 'Baba Budangiri Records'],
+    coordinates: { lat: 13.3134, lng: 75.7801 }
+  },
+  {
+    id: 'shivamogga',
+    name: 'Shivamogga',
+    nameKannada: 'ಶಿವಮೊಗ್ಗ',
+    division: 'Mysuru',
+    headquarters: 'Shivamogga',
+    established: 1886,
+    area: 8477,
+    population: 1752400,
+    historicalSignificance: 'Gateway to the Western Ghats. Center of the Kadamba dynasty.',
+    archivesCount: 912,
+    notableRecords: ['Jog Falls Documentation', 'Kadamba Inscriptions', 'Agumbe Rain Forest Records'],
+    coordinates: { lat: 13.9290, lng: 75.5681 }
+  },
+  {
+    id: 'dakshina-kannada',
+    name: 'Dakshina Kannada',
+    nameKannada: 'ದಕ್ಷಿಣ ಕನ್ನಡ',
+    division: 'Mysuru',
+    headquarters: 'Mangaluru',
+    established: 1862,
+    area: 4859,
+    population: 2089649,
+    historicalSignificance: 'Major port city with ancient maritime trade history under the Alupa dynasty.',
+    archivesCount: 1567,
+    notableRecords: ['Mangalore Port Records', 'Alupa Dynasty Chronicles', 'St. Aloysius Chapel Archives'],
+    coordinates: { lat: 12.9141, lng: 74.8560 }
+  },
+  {
+    id: 'udupi',
+    name: 'Udupi',
+    nameKannada: 'ಉಡುಪಿ',
+    division: 'Mysuru',
+    headquarters: 'Udupi',
+    established: 1997,
+    area: 3880,
+    population: 1187892,
+    historicalSignificance: 'Center of Dvaita Vedanta philosophy founded by Madhvacharya. Famous Krishna Temple.',
+    archivesCount: 789,
+    notableRecords: ['Udupi Krishna Temple Archives', 'Madhva Matha Records', 'YakshaganaOrigins'],
+    coordinates: { lat: 13.3409, lng: 74.7530 }
+  },
+  {
+    id: 'chitradurga',
+    name: 'Chitradurga',
+    nameKannada: 'ಚಿತ್ರದುರ್ಗ',
+    division: 'Bengaluru',
+    headquarters: 'Chitradurga',
+    established: 1865,
+    area: 8538,
+    population: 1668978,
+    historicalSignificance: 'Fort city known for the Chitradurga Fort and the legendary Obavva.',
+    archivesCount: 534,
+    notableRecords: ['Chitradurga Fort Chronicles', 'Obavva Legend Archives', 'Nayaka Kingdom Records'],
+    coordinates: { lat: 14.2250, lng: 76.3944 }
+  },
+  {
+    id: 'davanagere',
+    name: 'Davanagere',
+    nameKannada: 'ದಾವಣಗೆರೆ',
+    division: 'Bengaluru',
+    headquarters: 'Davanagere',
+    established: 1997,
+    area: 6028,
+    population: 1950425,
+    historicalSignificance: 'Known as the Manchester of Karnataka for its cotton industry.',
+    archivesCount: 445,
+    notableRecords: ['Cotton Mill Records', 'Harihar Temple Archives'],
+    coordinates: { lat: 14.4643, lng: 75.9212 }
+  },
+  {
+    id: 'kolar',
+    name: 'Kolar',
+    nameKannada: 'ಕೋಲಾರ',
+    division: 'Bengaluru',
+    headquarters: 'Kolar',
+    established: 1886,
+    area: 4012,
+    population: 1561464,
+    historicalSignificance: 'Gold mining center since the Indus Valley civilization. Ancient Kolaramma Temple.',
+    archivesCount: 678,
+    notableRecords: ['Kolar Gold Fields Archives', 'Kolaramma Temple Inscriptions', 'Bangarpet Mining Records'],
+    coordinates: { lat: 13.1370, lng: 78.1312 }
+  },
+  {
+    id: 'chikkaballapura',
+    name: 'Chikkaballapura',
+    nameKannada: 'ಚಿಕ್ಕಬಳ್ಳಾಪುರ',
+    division: 'Bengaluru',
+    headquarters: 'Chikkaballapura',
+    established: 2007,
+    area: 4245,
+    population: 1255941,
+    historicalSignificance: 'Known for Bhoga Nandeeshwara Temple and Nandi Hills.',
+    archivesCount: 289,
+    notableRecords: ['Nandi Hills Fort Records', 'Bhoga Nandeeshwara Temple Archives'],
+    coordinates: { lat: 13.4359, lng: 77.7290 }
+  },
+  {
+    id: 'raichur',
+    name: 'Raichur',
+    nameKannada: 'ರಾಯಚೂರು',
+    division: 'Kalaburagi',
+    headquarters: 'Raichur',
+    established: 1869,
+    area: 8446,
+    population: 1923601,
+    historicalSignificance: 'Capital of the Raichur Doab, contested between Vijayanagara and Bahmani kingdoms.',
+    archivesCount: 876,
+    notableRecords: ['Raichur Fort Siege Records', 'Bahmani-Vijayanagar Wars', 'Doab Land Settlements'],
+    coordinates: { lat: 16.2076, lng: 77.3463 }
+  },
+  {
+    id: 'koppal',
+    name: 'Koppal',
+    nameKannada: 'ಕೊಪ್ಪಳ',
+    division: 'Kalaburagi',
+    headquarters: 'Koppal',
+    established: 1997,
+    area: 5529,
+    population: 1390292,
+    historicalSignificance: 'Site of the Battle of Koppal (1857). Known for ancient Anegundi ruins.',
+    archivesCount: 534,
+    notableRecords: ['Koppal Fort Records', 'Anegundi Archaeological Archives', 'Freedom Struggle Documents'],
+    coordinates: { lat: 15.3480, lng: 76.1250 }
+  },
+  {
+    id: 'ballari',
+    name: 'Ballari',
+    nameKannada: 'ಬಳ್ಳಾರಿ',
+    division: 'Kalaburagi',
+    headquarters: 'Ballari',
+    established: 1882,
+    area: 8461,
+    population: 2470522,
+    historicalSignificance: 'Gateway to Hampi, the Vijayanagara capital. Rich mineral and historical heritage.',
+    archivesCount: 1567,
+    notableRecords: ['Hampi Monument Archives', 'Vijayanagara Empire Chronicles', 'Tungabhadra Dam Records'],
+    coordinates: { lat: 15.1394, lng: 76.9214 }
+  },
+  {
+    id: 'vijayapura',
+    name: 'Vijayapura',
+    nameKannada: 'ವಿಜಯಪುರ',
+    division: 'Belagavi',
+    headquarters: 'Vijayapura',
+    established: 1865,
+    area: 10831,
+    population: 2176034,
+    historicalSignificance: 'Capital of the Adil Shahi dynasty. Home to Gol Gumbaz and Ibrahim Rauza.',
+    archivesCount: 2134,
+    notableRecords: ['Adil Shahi Court Records', 'Gol Gumbaz Construction Archives', 'Ibrahim Rauza Inscriptions'],
+    coordinates: { lat: 16.8302, lng: 75.7103 }
+  },
+  {
+    id: 'bagalkote',
+    name: 'Bagalkote',
+    nameKannada: 'ಬಾಗಲಕೋಟೆ',
+    division: 'Belagavi',
+    headquarters: 'Bagalkote',
+    established: 1997,
+    area: 6533,
+    population: 1892142,
+    historicalSignificance: 'Chalukyan heartland with Badami, Aihole, and Pattadakal temple complexes.',
+    archivesCount: 1456,
+    notableRecords: ['Badami Cave Temple Records', 'Aihole Inscriptions', 'Pattadakal UNESCO Archives'],
+    coordinates: { lat: 16.1802, lng: 75.6985 }
+  },
+  {
+    id: 'belagavi',
+    name: 'Belagavi',
+    nameKannada: 'ಬೆಳಗಾವಿ',
+    division: 'Belagavi',
+    headquarters: 'Belagavi',
+    established: 1836,
+    area: 13415,
+    population: 4787839,
+    historicalSignificance: 'Proposed second capital of Karnataka. Strategic Maratha-Mysore frontier.',
+    archivesCount: 1234,
+    notableRecords: ['Belgaum Fort Chronicles', 'Kittur Rani Chennamma Archives', 'Goa Border Treaties'],
+    coordinates: { lat: 15.8497, lng: 74.4977 }
+  },
+  {
+    id: 'dharawada',
+    name: 'Dharawada',
+    nameKannada: 'ಧಾರವಾಡ',
+    division: 'Belagavi',
+    headquarters: 'Dharawada',
+    established: 1884,
+    area: 4225,
+    population: 1847185,
+    historicalSignificance: 'Educational hub with Karnataka University. Gateway to Western Ghats.',
+    archivesCount: 678,
+    notableRecords: ['Dharwad Pedha Trade Records', 'Karnataka University Archives', 'Hubli-Dharwad Merger'],
+    coordinates: { lat: 15.4646, lng: 75.0063 }
+  },
+  {
+    id: 'gadaga',
+    name: 'Gadaga',
+    nameKannada: 'ಗದಗ',
+    division: 'Belagavi',
+    headquarters: 'Gadaga',
+    established: 1997,
+    area: 4681,
+    population: 1064570,
+    historicalSignificance: 'Birthplace of the Kannada renaissance. Kumara Vyasa\'s Karnata Bharata Kathamanjari.',
+    archivesCount: 345,
+    notableRecords: ['Kumara Vyasa Manuscripts', 'Gadag Temple Architecture', 'Kannada Literary Heritage'],
+    coordinates: { lat: 15.4420, lng: 75.6298 }
+  },
+  {
+    id: 'haveri',
+    name: 'Haveri',
+    nameKannada: 'ಹಾವೇರಿ',
+    division: 'Belagavi',
+    headquarters: 'Haveri',
+    established: 1997,
+    area: 4438,
+    population: 1597668,
+    historicalSignificance: 'Historic Kadamba center with ancient Jain basadis.',
+    archivesCount: 412,
+    notableRecords: ['Kadamba Inscriptions', 'Jain Heritage Sites', 'Haveri Cotton Trade Records'],
+    coordinates: { lat: 14.8034, lng: 75.4002 }
+  },
+  {
+    id: 'uttara-kannada',
+    name: 'Uttara Kannada',
+    nameKannada: 'ಉತ್ತರ ಕನ್ನಡ',
+    division: 'Belagavi',
+    headquarters: 'Karwar',
+    established: 1862,
+    area: 10291,
+    population: 1437649,
+    historicalSignificance: 'Coastal district with ancient Kadamba capital Banavasi. Rich biodiversity.',
+    archivesCount: 567,
+    notableRecords: ['Banavasi Kadamba Archives', 'Karwar Port Records', 'Western Ghats Biodiversity'],
+    coordinates: { lat: 14.8064, lng: 74.4977 }
+  },
+  {
+    id: 'kalaburagi',
+    name: 'Kalaburagi',
+    nameKannada: 'ಕಲಬುರಗಿ',
+    division: 'Kalaburagi',
+    headquarters: 'Kalaburagi',
+    established: 1873,
+    area: 10952,
+    population: 2566834,
+    historicalSignificance: 'Capital of the Bahmani Sultanate. Sufi center with Khwaja Bande Nawaz Dargah.',
+    archivesCount: 1234,
+    notableRecords: ['Bahmani Sultanate Archives', 'Khwaja Bande Nawaz Urs Records', 'Gulbarga Fort Inscriptions'],
+    coordinates: { lat: 17.3206, lng: 76.8381 }
+  },
+  {
+    id: 'bidar',
+    name: 'Bidar',
+    nameKannada: 'ಬೀದರ್',
+    division: 'Kalaburagi',
+    headquarters: 'Bidar',
+    established: 1861,
+    area: 5448,
+    population: 1704700,
+    historicalSignificance: 'Capital of the Bidar Sultanate. Gurudwara Nanak Jhira Sahib sacred site.',
+    archivesCount: 892,
+    notableRecords: ['Bidar Sultanate Chronicles', 'Gurudwara Nanak Jhira Archives', 'Bidriware Craft Records'],
+    coordinates: { lat: 17.8306, lng: 77.5300 }
+  },
+  {
+    id: 'yadagiri',
+    name: 'Yadagiri',
+    nameKannada: 'ಯಾದಗಿರಿ',
+    division: 'Kalaburagi',
+    headquarters: 'Yadagiri',
+    established: 2009,
+    area: 5162,
+    population: 1174417,
+    historicalSignificance: 'Known for ancient rock-cut temples and Veerashaiva heritage.',
+    archivesCount: 234,
+    notableRecords: ['Yadagiri Temple Inscriptions', 'Veerashaiva Heritage', 'Mayura Varma Records'],
+    coordinates: { lat: 16.7572, lng: 76.9511 }
+  },
+  {
+    id: 'raichurga',
+    name: 'Ramanagara',
+    nameKannada: 'ರಾಮನಗರ',
+    division: 'Bengaluru',
+    headquarters: 'Ramanagara',
+    established: 2007,
+    area: 3570,
+    population: 1083739,
+    historicalSignificance: 'Silk city of Karnataka. Setting of the film Sholay.',
+    archivesCount: 278,
+    notableRecords: ['Silk Industry Archives', 'Ramadevara Betta Records', 'Sholay Film Heritage'],
+    coordinates: { lat: 12.7230, lng: 77.2838 }
+  },
+  {
+    id: 'chamarajagara',
+    name: 'Ramanagara Duplicate',
+    nameKannada: 'ರಾಮನಗರ ನಕಲಿ',
+    division: 'Bengaluru',
+    headquarters: 'Ramanagara',
+    established: 2007,
+    area: 3570,
+    population: 1083739,
+    historicalSignificance: 'Silk city of Karnataka. Setting of the film Sholay.',
+    archivesCount: 278,
+    notableRecords: ['Silk Industry Archives', 'Ramadevara Betta Records', 'Sholay Film Heritage'],
+    coordinates: { lat: 12.7230, lng: 77.2838 }
+  }
+];
+
+// Categories for archives
+export const ARCHIVE_CATEGORIES = [
+  { id: 'land-records', name: 'Land Records', nameKannada: 'ಭೂ ದಾಖಲೆಗಳು', icon: 'FileText', description: 'Revenue settlements, survey maps, land grants' },
+  { id: 'royal-decrees', name: 'Royal Decrees', nameKannada: 'ರಾಜಶಾಸನಗಳು', icon: 'Crown', description: 'Wadiyar, Hoysala, Vijayanagara inscriptions' },
+  { id: 'government-gazettes', name: 'Government Gazettes', nameKannada: 'ಸರ್ಕಾರಿ ಪತ್ರಿಕೆ', icon: 'Newspaper', description: 'Official notifications, acts, regulations' },
+  { id: 'judicial-records', name: 'Judicial Records', nameKannada: 'ನ್ಯಾಯಾಲಯ ದಾಖಲೆಗಳು', icon: 'Scale', description: 'Court decisions, legal precedents' },
+  { id: 'literary-manuscripts', name: 'Literary Manuscripts', nameKannada: 'ಸಾಹಿತ್ಯ ಹಸ್ತಪ್ರತಿಗಳು', icon: 'BookOpen', description: 'Kannada literature, poetry, epics' },
+  { id: 'archaeological-reports', name: 'Archaeological Reports', nameKannada: 'ಪುರಾತತ್ವ ವರದಿಗಳು', icon: 'Compass', description: 'Excavations, ASI reports, inscriptions' },
+  { id: 'military-hist', name: 'Military History', nameKannada: 'ಸೈನ್ಯ ಇತಿಹಾಸ', icon: 'Swords', description: 'Anglo-Mysore wars, Vijayanagara battles' },
+  { id: 'cultural-heritage', name: 'Cultural Heritage', nameKannada: 'ಸಾಂಸ್ಕೃತಿಕ ಪರಂಪರೆ', icon: 'Palette', description: 'Art, music, dance, folk traditions' },
+  { id: 'revenue-maps', name: 'Revenue Maps', nameKannada: 'ಆದಾಯ ನಕ್ಷೆಗಳು', icon: 'Map', description: 'Survey maps, village plans, boundaries' },
+  { id: 'personalities', name: 'Historical Personalities', nameKannada: 'ಐತಿಹಾಸಿಕ ವ್ಯಕ್ತಿಗಳು', icon: 'Users', description: 'Biographies, correspondence, photographs' }
+];
+
+// Historical eras
+export const HISTORICAL_ERAS = [
+  { id: 'pre-ganga', name: 'Pre-Ganga Period', years: 'Before 350 CE' },
+  { id: 'ganga', name: 'Ganga Dynasty', years: '350-1000 CE' },
+  { id: 'kadamba', name: 'Kadamba Dynasty', years: '345-525 CE' },
+  { id: 'chalu-kya', name: 'Chalukya Dynasty', years: '543-753 CE' },
+  { id: 'rashtrakuta', name: 'Rashtrakuta Dynasty', years: '753-982 CE' },
+  { id: 'hoysala', name: 'Hoysala Empire', years: '1026-1343 CE' },
+  { id: 'vijayanagara', name: 'Vijayanagara Empire', years: '1336-1646 CE' },
+  { id: 'bahmani', name: 'Bahmani Sultanate', years: '1347-1527 CE' },
+  { id: 'adil-shahi', name: 'Adil Shahi Dynasty', years: '1490-1686 CE' },
+  { id: 'mysore-kingdom', name: 'Kingdom of Mysore', years: '1399-1950 CE' },
+  { id: 'british-india', name: 'British India', years: '1799-1947 CE' },
+  { id: 'post-independence', name: 'Post-Independence', years: '1947-Present' }
+];
+
+// Archive statistics
+export const ARCHIVE_STATS = {
+  totalDocuments: 2000000,
+  totalIngested: 124567,
+  totalEntities: 15678,
+  totalRelationships: 89432,
+  districtsCovered: 31,
+  languages: ['Kannada', 'English', 'Persian', 'Sanskrit', 'Telugu', 'Marathi'],
+  oldestDocument: '1513 CE',
+  newestDocument: '2024',
+  averageLatency: 45
+};

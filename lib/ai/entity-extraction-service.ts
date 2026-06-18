@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { getApiKeyForFeature } from '@/lib/ai/keys-config';
 
 export interface ExtractedEntity {
   name: string;
@@ -17,7 +18,8 @@ export class EntityExtractionService {
     pageNumber: number = 1,
     apiKey?: string
   ): Promise<ExtractedEntity[]> {
-    if (apiKey) {
+    const key = apiKey || getApiKeyForFeature('graph');
+    if (key) {
       try {
         const prompt = `You are an expert archivist. Extract historical entities from the following text block.
         Return a JSON array of entities, where each object has:
@@ -29,7 +31,7 @@ export class EntityExtractionService {
         Text Block:
         """${text}"""`;
 
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

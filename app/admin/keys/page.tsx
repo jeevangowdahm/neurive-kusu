@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DEFAULT_GEMINI_KEYS, GeminiFeature } from '@/lib/ai/keys-config';
-import { Shield, ArrowLeft, Key, CheckCircle, XCircle, RefreshCw, Activity, AlertCircle, Info, Sparkles } from 'lucide-react';
+import { Shield, ArrowLeft, Key, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw, Activity, CircleAlert as AlertCircle, Info, Sparkles } from 'lucide-react';
 
 interface KeyState {
   feature: GeminiFeature;
@@ -45,6 +45,10 @@ const FEATURE_METADATA: Record<GeminiFeature, { name: string; description: strin
   graph: {
     name: 'Knowledge Graph Engine',
     description: 'Extracts entities relationship networks, links documents to districts, and populates timeline connections.'
+  },
+  other: {
+    name: 'Miscellaneous Operations',
+    description: 'Fallback for OCR, embeddings, and other general AI operations not covered by specific features.'
   }
 };
 
@@ -62,7 +66,8 @@ export default function KeysDashboard() {
     agent: { feature: 'agent', name: '', description: '', defaultVal: '', currentVal: '', isOverridden: false, status: 'untested' },
     chat: { feature: 'chat', name: '', description: '', defaultVal: '', currentVal: '', isOverridden: false, status: 'untested' },
     finding: { feature: 'finding', name: '', description: '', defaultVal: '', currentVal: '', isOverridden: false, status: 'untested' },
-    graph: { feature: 'graph', name: '', description: '', defaultVal: '', currentVal: '', isOverridden: false, status: 'untested' }
+    graph: { feature: 'graph', name: '', description: '', defaultVal: '', currentVal: '', isOverridden: false, status: 'untested' },
+    other: { feature: 'other', name: '', description: '', defaultVal: '', currentVal: '', isOverridden: false, status: 'untested' }
   });
 
   const [testAllLoading, setTestAllLoading] = useState(false);

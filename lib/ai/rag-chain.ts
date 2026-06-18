@@ -1,5 +1,7 @@
 import { RetrievalService, RetrievalFilters, RetrievalResult } from './retrieval-service';
 import { RerankingService, RerankedResult } from './reranking-service';
+import { getApiKeyForFeature } from './keys-config';
+import { OpenAIEmbeddingService } from './openai-embedding-service';
 
 export interface RAGRequest {
   message: string;
@@ -35,13 +37,11 @@ export class RAGChain {
    * Run the full RAG pipeline
    */
   static async execute(req: RAGRequest): Promise<RAGResponse> {
-    const { message, documentId, filters = {}, apiKey, userRole = 'guest' } = req;
+    const { message, documentId, filters = {}, userRole = 'guest' } = req;
 
     // 1. Generate query embedding (optional)
     let queryEmbedding: number[] | null = null;
-    if (apiKey) {
-      queryEmbedding = await this.generateEmbedding(message, apiKey);
-    }
+    queryEmbedding = await this.generateEmbedding(message);
 
     // 2. Retrieval: Fetch relevant chunks
     const retrieved = await RetrievalService.retrieveRelevantChunks(
@@ -132,7 +132,7 @@ export class RAGChain {
     }
 
     // 5. Build prompt and generate answer
-    const answer = await this.generateAnswer(message, prioritizedContexts, apiKey);
+    const answer = await this.generateAnswer(message, prioritizedContexts);
 
     // 6. Build citations
     const citations: RAGCitations[] = prioritizedContexts.map((item, index) => ({
@@ -156,11 +156,23 @@ export class RAGChain {
   }
 
   /**
-   * Generate query vector
+   * Generate query vector - uses OpenAI embeddings by default, falls back to Gemini
    */
-  private static async generateEmbedding(query: string, apiKey: string): Promise<number[] | null> {
+  private static async generateEmbedding(query: string, apiKey?: string): Promise<number[] | null> {
+    // Try OpenAI first (preferred for superior semantic understanding)
+    if (process.env.OPENAI_API_KEY) {
+      const openAIResult = await OpenAIEmbeddingService.generateEmbedding(query);
+      if (openAIResult.status === 'generated' && openAIResult.embedding.length > 0) {
+        return openAIResult.embedding;
+      }
+    }
+
+    // Fallback to Gemini embeddings
+    const geminiKey = apiKey || getApiKeyForFeature('other');
+    if (!geminiKey) return null;
+
     try {
-      const url = `https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key=${geminiKey}`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,7 +211,8 @@ Source Name: ${name}
 Snippet: ${c.matchedSnippet}`;
     }).join('\n\n');
 
-    if (apiKey) {
+    const chatKey = apiKey || getApiKeyForFeature('chat');
+    if (chatKey) {
       try {
         const systemPrompt = `You are Neurive, the AI assistant for the Karnataka Digital Archives.
 Your task is to answer user queries about historical archival records using ONLY the provided context blocks.
@@ -218,7 +231,7 @@ CRITICAL SECURITY & PROTECTION RULES (RAG HARDENING):
 Context Blocks:
 ${contextText}`;
 
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${chatKey}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
