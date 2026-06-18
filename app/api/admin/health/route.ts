@@ -188,24 +188,24 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // --- Check 7: Gemini/OpenAI API Config (Safe check) ---
-    const geminiKey = process.env.GEMINI_API_KEY;
-    const openaiKey = process.env.OPENAI_API_KEY;
+    // --- Check 7: Gemini/OpenAI API Config (presence only, never expose key values) ---
+    const geminiConfigured = !!(process.env.GEMINI_API_KEY);
+    const openaiConfigured = !!(process.env.OPENAI_API_KEY);
     
     checks.push({
       id: 'gemini_config',
       name: 'Gemini AI Integration',
-      status: geminiKey ? 'healthy' : 'warning',
-      message: geminiKey ? 'Gemini API key is configured.' : 'Gemini API key is missing. RAG chat will fall back to local answers.',
-      fix: geminiKey ? null : 'Add GEMINI_API_KEY to your environment variables file (.env) to enable Gemini LLM.'
+      status: geminiConfigured ? 'healthy' : 'warning',
+      message: geminiConfigured ? 'Gemini API key is configured.' : 'Gemini API key is missing. RAG chat will fall back to local answers.',
+      fix: geminiConfigured ? null : 'Add GEMINI_API_KEY to your server environment variables.'
     });
 
     checks.push({
       id: 'openai_config',
       name: 'OpenAI Embeddings Client',
-      status: openaiKey ? 'healthy' : 'warning',
-      message: openaiKey ? 'OpenAI key configured.' : 'OpenAI key missing. Document ingestion will run on mock embeddings.',
-      fix: openaiKey ? null : 'Add OPENAI_API_KEY to enable OpenAI text-embedding-ada-002 vector indexing.'
+      status: openaiConfigured ? 'healthy' : 'warning',
+      message: openaiConfigured ? 'OpenAI key configured.' : 'OpenAI key missing. Document ingestion will run on mock embeddings.',
+      fix: openaiConfigured ? null : 'Add OPENAI_API_KEY to your server environment to enable OpenAI text-embedding-ada-002 vector indexing.'
     });
 
     // --- Check 8: Route API endpoints ---

@@ -1,4 +1,5 @@
 'use client';
+import { safeWriteToClipboard } from '@/lib/security/clipboard';
 
 import React, { useState, useEffect } from 'react';
 import { Search, Copy, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Edit2, Save, X, History } from 'lucide-react';
@@ -84,9 +85,9 @@ export function OCRTextTab({
     ? (currentPageData?.extracted_text || '') 
     : (currentPageData?.corrected_text || currentPageData?.extracted_text || '');
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!activeText) return;
-    navigator.clipboard.writeText(activeText);
+    safeWriteToClipboard(activeText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

@@ -1,4 +1,5 @@
 'use client';
+import { safeWriteToClipboard } from '@/lib/security/clipboard';
 
 import { useState } from 'react';
 import { Code as Code2, Copy, Check, ChevronDown, ChevronRight, Key, Zap, Database, Search, FileText } from 'lucide-react';
@@ -10,8 +11,8 @@ import { AppLayout } from '@/components/app-layout';
 
 function CodeBlock({ code, lang = 'json' }: { code: string; lang?: string }) {
   const [copied, setCopied] = useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(code);
+  const copy = async () => {
+    safeWriteToClipboard(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

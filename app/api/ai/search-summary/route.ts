@@ -1,26 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiKeyForFeature } from '@/lib/ai/keys-config';
+import { checkRateLimit } from '@/lib/security/rate-limit';
+import { sanitizePromptInput } from '@/lib/security/validation';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { apiKey, model = 'gemini-1.5-flash', version = 'v1', query, searchResults = [] } = body;
-
-  if (!apiKey || typeof apiKey !== 'string') {
-    return NextResponse.json({ success: false, error: 'Gemini API key is required' }, { status: 400 });
+  const rateCheck = await checkRateLimit(req, { limit: 10, refillRate: 0.1 });
+  if (!rateCheck.success) {
+    return NextResponse.json({ success: false, error: 'Too many requests.' }, { status: 429 });
   }
 
-  if (!query || typeof query !== 'string') {
-    return NextResponse.json({ success: false, error: 'Query is required' }, { status: 400 });
-  }
+  try {
+    const body = await req.json();
+    const { model = 'gemini-1.5-flash', version = 'v1', query, searchResults = [] } = body;
 
-  const resultsContext = searchResults
-    .slice(0, 5)
-    .map((r: any, i: number) =>
-      `[Document #${i + 1}]\nTitle: ${r.title}\nSource: ${r.source}\nYear: ${r.year}\nDescription: ${r.description || 'No description'}`
-    )
-    .join('\n\n');
+    // ── Secret Key: server-side only ─────────────────────────────────────────
+    const apiKey = getApiKeyForFeature('search');
+    if (!apiKey) {
+      return NextResponse.json({ success: false, error: 'AI service unavailable.' }, { status: 503 });
+    }
 
-  const prompt = `You are Neurive's Semantic Search Summarizer.
-Analyze the search results provided below for the user query: "${query}".
+    if (!query || typeof query !== 'string') {
+      return NextResponse.json({ success: false, error: 'Query is required' }, { status: 400 });
+    }
+
+    // Whitelist model & version
+    const ALLOWED_MODELS = new Set([
+      'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b',
+    ]);
+    const ALLOWED_VERSIONS = new Set(['v1', 'v1beta']);
+    const safeModel = ALLOWED_MODELS.has(model) ? model : 'gemini-1.5-flash';
+    const safeVersion = ALLOWED_VERSIONS.has(version) ? version : 'v1';
+
+    // ── SSTI guard ────────────────────────────────────────────────────────────
+    const safeQuery = sanitizePromptInput(query.substring(0, 500));
+
+    const resultsContext = (Array.isArray(searchResults) ? searchResults : [])
+      .slice(0, 5)
+      .map((r: any, i: number) =>
+        `[Document #${i + 1}]\nTitle: ${sanitizePromptInput(String(r.title || ''))}\nSource: ${sanitizePromptInput(String(r.source || ''))}\nYear: ${sanitizePromptInput(String(r.year || ''))}\nDescription: ${sanitizePromptInput(String(r.description || 'No description'))}`
+      )
+      .join('\n\n');
+
+    const prompt = `You are Neurive's Semantic Search Summarizer.
+Analyze the search results provided below for the user query: "${safeQuery}".
 Return ONLY raw JSON with this structure:
 {
   "answer": "Detailed answer matching the query language",
@@ -36,74 +58,47 @@ Return ONLY raw JSON with this structure:
 Documents context:
 ${resultsContext}`;
 
-  const candidates = [
-    { version, model },
-    { version: 'v1', model: 'gemini-1.5-flash' },
-    { version: 'v1beta', model: 'gemini-1.5-flash' },
-    { version: 'v1', model: 'gemini-2.0-flash' },
-    { version: 'v1beta', model: 'gemini-2.0-flash' },
-  ].filter((candidate, index, arr) =>
-    arr.findIndex((item) => item.version === candidate.version && item.model === candidate.model) === index
-  );
+    const candidates = [
+      { version: safeVersion, model: safeModel },
+      { version: 'v1', model: 'gemini-1.5-flash' },
+    ];
 
-  let preferredError = '';
-  let lastError = 'Gemini request failed';
+    let lastError = 'Gemini request failed';
 
-  for (let i = 0; i < candidates.length; i++) {
-    const candidate = candidates[i];
-    try {
-      const url = `https://generativelanguage.googleapis.com/${candidate.version}/models/${candidate.model}:generateContent?key=${apiKey}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.3,
-            responseMimeType: 'application/json',
-          },
-        }),
-      });
+    for (const candidate of candidates) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/${candidate.version}/models/${candidate.model}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.3, responseMimeType: 'application/json' },
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errMsg = errorData.error?.message || `Gemini API responded with status ${response.status}`;
-        
-        if (i === 0) {
-          preferredError = errMsg;
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          lastError = err.error?.message || `API error ${response.status}`;
+          if (response.status === 429) {
+            return NextResponse.json({ success: false, error: 'Rate limit exceeded.' }, { status: 429 });
+          }
+          continue;
         }
 
-        const lowerMsg = errMsg.toLowerCase();
-        if (response.status === 400 && (lowerMsg.includes('key') || lowerMsg.includes('invalid'))) {
-          return NextResponse.json({ success: false, error: errMsg }, { status: 400 });
-        }
-        if (response.status === 403) {
-          return NextResponse.json({ success: false, error: errMsg }, { status: 403 });
-        }
-        if (response.status === 429) {
-          return NextResponse.json({ success: false, error: errMsg }, { status: 429 });
-        }
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) { lastError = 'Empty response'; continue; }
 
-        lastError = errMsg;
-        continue;
+        return NextResponse.json({ success: true, data: JSON.parse(text.trim()) });
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err);
       }
-
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) {
-        lastError = 'Empty response from Gemini';
-        continue;
-      }
-
-      return NextResponse.json({ success: true, data: JSON.parse(text.trim()) });
-    } catch (error) {
-      const errMsg = error instanceof Error ? error.message : String(error);
-      if (i === 0) {
-        preferredError = errMsg;
-      }
-      lastError = errMsg;
     }
-  }
 
-  return NextResponse.json({ success: false, error: preferredError || lastError }, { status: 502 });
+    return NextResponse.json({ success: false, error: 'AI service temporarily unavailable.' }, { status: 502 });
+  } catch (error) {
+    console.error('Search summary API error:', error);
+    return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
+  }
 }

@@ -1,4 +1,5 @@
 'use client';
+import { safeWriteToClipboard } from '@/lib/security/clipboard';
 
 import React, { useState } from 'react';
 import { Copy, Check, FileText, Link as LinkIcon, Share2, ChevronDown } from 'lucide-react';
@@ -51,21 +52,21 @@ export function CitationActions({
     url: getUrl()
   }, style);
 
-  const handleCopyCitation = () => {
-    navigator.clipboard.writeText(citationText);
+  const handleCopyCitation = async () => {
+    safeWriteToClipboard(citationText);
     setCopiedCitation(true);
     setTimeout(() => setCopiedCitation(false), 2000);
   };
 
-  const handleCopyRef = () => {
-    navigator.clipboard.writeText(accessionNumber);
+  const handleCopyRef = async () => {
+    safeWriteToClipboard(accessionNumber);
     setCopiedRef(true);
     setTimeout(() => setCopiedRef(false), 2000);
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     const pageUrl = getUrl();
-    navigator.clipboard.writeText(pageUrl);
+    safeWriteToClipboard(pageUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };

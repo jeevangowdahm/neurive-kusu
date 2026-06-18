@@ -7,7 +7,35 @@ import { RetrievalService } from '@/lib/ai/retrieval-service';
 import { RerankingService } from '@/lib/ai/reranking-service';
 import { EmbeddingService } from '@/lib/ai/embedding-service';
 import { getApiKeyForFeature } from '@/lib/ai/keys-config';
+import { sanitizeString } from '@/lib/security/validation';
 
+// ── Allowed values for enum-like filters (SQL injection guard) ──────────────
+const ALLOWED_LANGUAGES = new Set(['kannada', 'english', 'both', 'sanskrit', 'persian', 'hindi']);
+const ALLOWED_VISIBILITIES = new Set(['public', 'restricted', 'private']);
+const ALLOWED_SOURCE_TYPES = new Set([
+  'uploaded', 'government_pdf', 'internet_archive', 'wikipedia', 'wikisource', 'open_data', 'state_archives',
+]);
+const ALLOWED_OCR_QUALITIES = new Set(['high', 'medium', 'low']);
+
+function sanitizeFilters(raw: any): SearchFilters {
+  const f: SearchFilters = {};
+  if (typeof raw.category === 'string')      f.category    = sanitizeString(raw.category).substring(0, 80);
+  if (typeof raw.district === 'string')      f.district    = sanitizeString(raw.district).substring(0, 80);
+  if (ALLOWED_LANGUAGES.has(raw.language))   f.language    = raw.language;
+  if (typeof raw.yearFrom === 'number' && raw.yearFrom >= 0 && raw.yearFrom <= 2100)
+    f.yearFrom = Math.floor(raw.yearFrom);
+  if (typeof raw.yearTo === 'number' && raw.yearTo >= 0 && raw.yearTo <= 2100)
+    f.yearTo = Math.floor(raw.yearTo);
+  if (typeof raw.ocrConfidence === 'number') f.ocrConfidence = Math.max(0, Math.min(1, raw.ocrConfidence));
+  if (typeof raw.docType === 'string')       f.docType     = sanitizeString(raw.docType).substring(0, 50);
+  if (ALLOWED_VISIBILITIES.has(raw.visibility))  f.visibility = raw.visibility;
+  if (typeof raw.entityType === 'string')    f.entityType  = sanitizeString(raw.entityType).substring(0, 50);
+  if (typeof raw.uploadedAfter === 'string') f.uploadedAfter = raw.uploadedAfter.replace(/[^0-9T:.Z-]/g, '').substring(0, 25);
+  if (typeof raw.uploadedBefore === 'string') f.uploadedBefore = raw.uploadedBefore.replace(/[^0-9T:.Z-]/g, '').substring(0, 25);
+  if (ALLOWED_SOURCE_TYPES.has(raw.sourceType)) f.sourceType = raw.sourceType;
+  if (ALLOWED_OCR_QUALITIES.has(raw.ocrQuality)) f.ocrQuality = raw.ocrQuality;
+  return f;
+}
 
 interface SearchFilters {
   category?: string;
@@ -193,32 +221,44 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { 
       query, 
-      limit = 20, 
-      page = 1, 
-      filters = {}, 
-      apiKey,
-      model = 'text-embedding-004',
-      version = 'v1'
+      limit: rawLimit = 20, 
+      page: rawPage = 1, 
+      filters: rawFilters = {},
+      model: rawModel = 'text-embedding-004',
+      version: rawVersion = 'v1'
     } = body as {
       query: string;
       limit?: number;
       page?: number;
-      filters?: SearchFilters;
-      apiKey?: string;
+      filters?: Record<string, unknown>;
       model?: string;
       version?: string;
     };
 
+    // ── Input sanitization (SQL/NoSQL injection & SSTI guard) ────────────────
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ success: false, error: 'Query parameter is required' }, { status: 400 });
     }
+    if (query.length > 500) {
+      return NextResponse.json({ success: false, error: 'Query too long (max 500 chars)' }, { status: 400 });
+    }
+    const safeQuery = sanitizeString(query.trim());
+    const limit = Math.min(Math.max(1, Math.floor(Number(rawLimit) || 20)), 100);
+    const page  = Math.max(1, Math.floor(Number(rawPage) || 1));
+    const filters = sanitizeFilters(rawFilters);
+
+    // Whitelist model & version (prevents injection via these params)
+    const ALLOWED_MODELS_EMBED = new Set(['text-embedding-004', 'text-embedding-003']);
+    const ALLOWED_VERSIONS_EMBED = new Set(['v1', 'v1beta']);
+    const model = ALLOWED_MODELS_EMBED.has(rawModel) ? rawModel : 'text-embedding-004';
+    const version = ALLOWED_VERSIONS_EMBED.has(rawVersion) ? rawVersion : 'v1';
 
     // 1. Query Expansion (Multilingual spellings & synonyms)
-    const { expandedQuery, terms } = RetrievalService.expandQuery(query);
+    const { expandedQuery, terms } = RetrievalService.expandQuery(safeQuery);
 
-    // 2. Server-side Embedding Generation (Optional, dimension safe)
+    // 2. Server-side Embedding Generation — key from server env only
     let queryEmbedding: number[] | null = null;
-    const activeKey = apiKey || getApiKeyForFeature('search');
+    const activeKey = getApiKeyForFeature('search');
     if (activeKey) {
       const embRes = await EmbeddingService.generateEmbedding(query, activeKey, model);
       if (embRes.status === 'generated') {
@@ -306,7 +346,7 @@ export async function POST(req: NextRequest) {
 
       // If no database hits, trigger local mock engine so demo doesn't show blank
       if (searchResults.length === 0) {
-        const fallback = getScoredMockResults(query, terms, filters, limit, page, userRole);
+        const fallback = getScoredMockResults(safeQuery, terms, filters, limit, page, userRole);
         searchResults = fallback.results;
         totalResults = fallback.total;
         modeUsed = 'Local Mock Fallback';
@@ -314,7 +354,7 @@ export async function POST(req: NextRequest) {
       }
     } catch (dbErr) {
       console.warn('Database hybrid search RPC failed, falling back to mock engine:', dbErr);
-      const fallback = getScoredMockResults(query, terms, filters, limit, page, userRole);
+      const fallback = getScoredMockResults(safeQuery, terms, filters, limit, page, userRole);
       searchResults = fallback.results;
       totalResults = fallback.total;
       modeUsed = 'Local Mock Fallback';
@@ -330,7 +370,7 @@ export async function POST(req: NextRequest) {
       .insert([
         {
           user_id: user?.id || null,
-          query: query,
+          query: safeQuery,
           expanded_query: expandedQuery,
           filters: filters,
           result_count: totalResults,

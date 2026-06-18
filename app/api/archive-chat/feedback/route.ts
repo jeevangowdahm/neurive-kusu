@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { checkRateLimit } from '@/lib/security/rate-limit';
+import { validateReplayHeaders } from '@/lib/security/replay-protection';
 
 export async function PATCH(req: NextRequest) {
+  // ── Rate limit ──────────────────────────────────────────────────────────────
+  const rateCheck = await checkRateLimit(req, { limit: 20, refillRate: 0.3 });
+  if (!rateCheck.success) {
+    return NextResponse.json({ success: false, error: 'Too many requests.' }, { status: 429 });
+  }
+
+  // ── Replay attack guard ─────────────────────────────────────────────────────
+  const replayErr = validateReplayHeaders(req);
+  if (replayErr) {
+    return NextResponse.json({ success: false, error: replayErr }, { status: 400 });
+  }
+
   const supabase = createServerSupabaseClient();
 
   try {

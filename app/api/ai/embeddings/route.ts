@@ -1,66 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiKeyForFeature } from '@/lib/ai/keys-config';
+import { checkRateLimit } from '@/lib/security/rate-limit';
+import { sanitizePromptInput } from '@/lib/security/validation';
 
 export async function POST(req: NextRequest) {
+  const rateCheck = await checkRateLimit(req, { limit: 15, refillRate: 0.2 });
+  if (!rateCheck.success) {
+    return NextResponse.json({ success: false, error: 'Too many requests.' }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
-    const {
-      apiKey,
-      text, // string or string[]
-      model = 'text-embedding-004',
-      version = 'v1',
-    } = body;
+    const { text, model = 'text-embedding-004', version = 'v1' } = body;
 
-    if (!apiKey || typeof apiKey !== 'string') {
-      return NextResponse.json({ success: false, error: 'Gemini API key is required' }, { status: 400 });
+    // ── Secret Key: server-side only ─────────────────────────────────────────
+    const apiKey = getApiKeyForFeature('search');
+    if (!apiKey) {
+      return NextResponse.json({ success: false, error: 'Embedding service unavailable.' }, { status: 503 });
     }
 
     if (!text) {
       return NextResponse.json({ success: false, error: 'Text content is required' }, { status: 400 });
     }
 
-    const texts = Array.isArray(text) ? text : [text];
+    // Whitelist model & version
+    const ALLOWED_MODELS = new Set(['text-embedding-004', 'text-embedding-003']);
+    const ALLOWED_VERSIONS = new Set(['v1', 'v1beta']);
+    const safeModel = ALLOWED_MODELS.has(model) ? model : 'text-embedding-004';
+    const safeVersion = ALLOWED_VERSIONS.has(version) ? version : 'v1';
+
+    const texts: string[] = Array.isArray(text) ? text.slice(0, 50) : [text]; // cap batch size
     const embeddings: number[][] = [];
 
-    // Loop through texts and get embeddings from Gemini API
     for (const textItem of texts) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:embedContent?key=${apiKey}`;
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: `models/${model}`,
-            content: {
-              parts: [{ text: textItem }],
-            },
-          }),
-        });
+      // ── SSTI guard on text before sending to external API ──────────────────
+      const safeText = sanitizePromptInput(String(textItem).substring(0, 8000));
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errMsg = errorData.error?.message || `Embedding API responded with status ${response.status}`;
-          return NextResponse.json({ success: false, error: errMsg }, { status: response.status });
+      const url = `https://generativelanguage.googleapis.com/${safeVersion}/models/${safeModel}:embedContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: `models/${safeModel}`,
+          content: { parts: [{ text: safeText }] },
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        const errMsg = err.error?.message || `API error ${response.status}`;
+        if (response.status === 429) {
+          return NextResponse.json({ success: false, error: 'Rate limit exceeded.' }, { status: 429 });
         }
-
-        const data = await response.json();
-        const values = data.embedding?.values;
-        if (!values) {
-          return NextResponse.json({ success: false, error: 'Invalid embedding values returned' }, { status: 502 });
-        }
-
-        embeddings.push(values);
-      } catch (err) {
-        return NextResponse.json({ success: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+        return NextResponse.json({ success: false, error: errMsg }, { status: response.status });
       }
+
+      const data = await response.json();
+      const values = data.embedding?.values;
+      if (!values) {
+        return NextResponse.json({ success: false, error: 'Invalid embedding values returned' }, { status: 502 });
+      }
+      embeddings.push(values);
     }
 
-    // Return floats array
-    return NextResponse.json({ 
-      success: true, 
-      data: Array.isArray(text) ? embeddings : embeddings[0] 
+    return NextResponse.json({
+      success: true,
+      data: Array.isArray(text) ? embeddings : embeddings[0],
     });
   } catch (error) {
-    console.error('Embeddings API endpoint crash:', error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Server Error' }, { status: 500 });
+    console.error('Embeddings API error:', error);
+    return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
   }
 }

@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/lib/supabase';
+import { sanitizeString, validateEmail } from '@/lib/security/validation';
+
+const MAX_PASSWORD_LENGTH = 128;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,10 +25,17 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // ── LPDoS guard ────────────────────────────────────────────────────────────
+    if (password.length > MAX_PASSWORD_LENGTH) {
+      setError('Invalid credentials.');
+      return;
+    }
+
     setLoading(true);
 
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
+      email: sanitizeString(email).toLowerCase().trim(),
       password,
     });
 
@@ -43,10 +53,15 @@ export default function LoginPage() {
     setEmail(demoEmail);
     setPassword(demoPassword);
     setError('');
+    // ── LPDoS guard for demo logins ─────────────────────────────────────────
+    if (demoPassword.length > MAX_PASSWORD_LENGTH) {
+      setError('Invalid credentials.');
+      return;
+    }
     setLoading(true);
 
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email: demoEmail,
+      email: sanitizeString(demoEmail).toLowerCase().trim(),
       password: demoPassword,
     });
 
@@ -114,6 +129,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     className="pl-9 pr-10"
                     required
+                    maxLength={128}
                   />
                   <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

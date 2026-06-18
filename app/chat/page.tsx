@@ -437,9 +437,14 @@ What would you like to explore today?`,
     window.speechSynthesis.speak(utterance);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+  const copyToClipboard = async (text: string) => {
+    const { safeWriteToClipboard } = await import('@/lib/security/clipboard');
+    const ok = await safeWriteToClipboard(text);
+    if (ok) {
+      alert('Copied to clipboard!');
+    } else {
+      alert('Copy failed. Please select and copy manually.');
+    }
   };
 
   // Link Builder preferring /documents dynamic route and falling back to /archive

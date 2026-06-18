@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
+import { assertPasswordLength, sanitizeString, validateEmail } from '@/lib/security/validation';
+
+const MAX_PASSWORD_LENGTH = 128;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,10 +24,27 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // ── LPDoS guard ────────────────────────────────────────────────────────────
+    if (form.password.length > MAX_PASSWORD_LENGTH) {
+      setError(`Password must not exceed ${MAX_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
+    // ── Basic email format check ───────────────────────────────────────────────
+    if (!validateEmail(form.email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     setLoading(true);
 
     const { error: authError } = await supabase.auth.signUp({
-      email: form.email,
+      email: sanitizeString(form.email).toLowerCase().trim(),
       password: form.password,
       options: {
         data: {
@@ -89,7 +109,7 @@ export default function RegisterPage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input type={showPw ? 'text' : 'password'} value={form.password}
                     onChange={(e) => setForm(p => ({ ...p, password: e.target.value }))}
-                    placeholder="••••••••" className="pl-9 pr-10" required minLength={6} />
+                    placeholder="••••••••" className="pl-9 pr-10" required minLength={8} maxLength={128} />
                   <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
