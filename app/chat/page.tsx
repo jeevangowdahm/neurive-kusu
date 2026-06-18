@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Send, Sparkles, MessageCircle, Loader as Loader2, Volume2, Copy,
-  ThumbsUp, ThumbsDown, Search, Bookmark, MapPin, FileText,
-  ExternalLink, Landmark, BookOpen, Scale, ChevronRight,
-  Brain, Lightbulb, Archive, Trash2, Edit3, Plus, X, Globe, RotateCcw
-} from 'lucide-react';
+import { Send, Sparkles, MessageCircle, Loader as Loader2, Volume2, Copy, ThumbsUp, ThumbsDown, Search, Bookmark, MapPin, FileText, ExternalLink, Landmark, BookOpen, Scale, ChevronRight, Brain, Lightbulb, Archive, Trash2, CreditCard as Edit3, Plus, X, Globe, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';

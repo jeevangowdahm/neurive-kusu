@@ -2,7 +2,7 @@
 import { safeWriteToClipboard } from '@/lib/security/clipboard';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Copy, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Edit2, Save, X, History } from 'lucide-react';
+import { Search, Copy, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, CreditCard as Edit2, Save, X, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
