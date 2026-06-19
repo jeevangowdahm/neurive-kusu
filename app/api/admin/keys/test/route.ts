@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { checkRateLimit } from '@/lib/security/rate-limit';
+import { getApiKeyForFeature } from '@/lib/ai/keys-config';
 
 export async function POST(req: NextRequest) {
   const supabase = createServerSupabaseClient();
@@ -34,12 +35,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Forbidden. Admin credentials required.' }, { status: 403 });
     }
 
-    // 3. Parse payload
-    const body = await req.json();
-    const { apiKey, feature } = body;
-
-    if (!apiKey || typeof apiKey !== 'string') {
-      return NextResponse.json({ success: false, error: 'API key is required' }, { status: 400 });
+    // 3. Read the server-side key only — NEVER accept API key from client body
+    // An admin panel compromise should NOT let an attacker choose which key to test
+    const apiKey = getApiKeyForFeature('search');
+    if (!apiKey) {
+      return NextResponse.json({ success: false, status: 'failed', error: 'No API key configured on server' }, { status: 503 });
     }
 
     // 4. Test connection using a lightweight request to Gemini API
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json();
-    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0].text || '';
     
     if (textResponse.toLowerCase().includes('ok') || textResponse.trim().length > 0) {
       return NextResponse.json({

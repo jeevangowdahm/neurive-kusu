@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { expandQuery } from '@/lib/query-expansion';
 import { checkRateLimit } from '@/lib/security/rate-limit';
+import { sanitizeString } from '@/lib/security/validation';
 import { RAGChain } from '@/lib/ai/rag-chain';
 import { getApiKeyForFeature } from '@/lib/ai/keys-config';
 
@@ -117,6 +118,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Message content is required' }, { status: 400 });
     }
 
+    // ── SSTI / Prompt Injection guard: sanitize before passing to LLM ──
+    const safeMessage = sanitizeString(message).substring(0, 2000);
+    if (safeMessage.length < 2) {
+      return NextResponse.json({ success: false, error: 'Message content is too short or invalid' }, { status: 400 });
+    }
+
     // 1. Check user authentication and role
     const { data: { user } } = await supabase.auth.getUser();
     let userRole: 'admin' | 'archivist' | 'researcher' | 'user' | 'guest' = 'guest';
@@ -133,7 +140,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Execute modular RAG Chain
     const ragRes = await RAGChain.execute({
-      message,
+      message: safeMessage,
       documentId: document_id,
       filters: {
         district: filters.district,
@@ -162,7 +169,7 @@ export async function POST(req: NextRequest) {
     if (user && ragRes.evidenceFound) {
       try {
         if (!finalSessionId) {
-          const sessionTitle = message.substring(0, 40) + (message.length > 40 ? '...' : '');
+          const sessionTitle = safeMessage.substring(0, 40) + (safeMessage.length > 40 ? '...' : '');
           const { data: newSession, error: sessErr } = await supabase
             .from('chat_sessions')
             .insert([{ user_id: user.id, title: sessionTitle }])
@@ -178,7 +185,7 @@ export async function POST(req: NextRequest) {
           session_id: finalSessionId,
           user_id: user.id,
           role: 'user',
-          content: message,
+          content: safeMessage,
           citations: [],
           confidence_score: 1.0,
           feedback: null
