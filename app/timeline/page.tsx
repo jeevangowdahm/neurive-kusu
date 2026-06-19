@@ -1,162 +1,211 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, Loader2, Sparkles, Filter, Search } from 'lucide-react';
-import { AppLayout } from '@/components/app-layout';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Navbar } from '@/components/navbar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { KARNATAKA_DISTRICTS, ARCHIVE_CATEGORIES } from '@/lib/mock-data';
-import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Calendar, ArrowRight, Network, Search, MapPin, Clock } from 'lucide-react';
+import { QuickActions } from '@/components/shared/QuickActions';
 
-// Subcomponents
-import { TimelineList } from '@/components/knowledge-graph/TimelineList';
+interface TimelineEvent {
+  id: string;
+  title: string;
+  event_date: string;
+  event_type: string;
+  description: string | null;
+  importance: number;
+  entity_id: string | null;
+  archive_id: string | null;
+  district_id: string | null;
+  entities?: { name: string; entity_type: string } | null;
+  archives?: { title: string; year: number } | null;
+  districts?: { name: string } | null;
+}
 
 export default function TimelinePage() {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
-
-  // Filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [district, setDistrict] = useState('all');
-  const [category, setCategory] = useState('all');
-  const [yearFrom, setYearFrom] = useState('');
-  const [yearTo, setYearTo] = useState('');
-
-  const loadTimeline = useCallback(async () => {
-    setLoading(true);
-    try {
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) queryParams.set('entity', searchQuery.trim());
-      if (district !== 'all') queryParams.set('district', district);
-      if (category !== 'all') queryParams.set('category', category);
-      if (yearFrom) queryParams.set('year_from', yearFrom);
-      if (yearTo) queryParams.set('year_to', yearTo);
-
-      const res = await fetch(`/api/knowledge-graph?${queryParams.toString()}`);
-      if (!res.ok) throw new Error('Failed to load timeline events');
-
-      const data = await res.json();
-      if (data.success) {
-        setIsDemo(!!data.isDemo);
-        setEvents(data.timeline_events || []);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to resolve historical timeline');
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, district, category, yearFrom, yearTo]);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadTimeline();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [loadTimeline]);
+    async function loadTimeline() {
+      try {
+        const response = await fetch('/api/timeline');
+        const data = await response.json();
+        if (data.success) {
+          setEvents(data.events || []);
+        } else {
+          setError(data.error || 'Failed to load timeline');
+        }
+      } catch (err) {
+        setError('Failed to load timeline');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTimeline();
+  }, []);
+
+  const filteredEvents = filter === 'all' 
+    ? events 
+    : events.filter(e => e.event_type === filter);
+
+  const groupedByEra: Record<string, TimelineEvent[]> = {};
+  filteredEvents.forEach((event) => {
+    const year = new Date(event.event_date).getFullYear();
+    const era = year < 1000 ? 'Ancient (Pre-1000)' : 
+                year < 1500 ? 'Medieval (1000-1500)' :
+                year < 1800 ? 'Early Modern (1500-1800)' :
+                year < 1950 ? 'Colonial (1800-1950)' : 'Modern (1950-)';
+    if (!groupedByEra[era]) groupedByEra[era] = [];
+    groupedByEra[era].push(event);
+  });
+
+  const eventTypes = ['all', 'birth', 'death', 'battle', 'construction', 'other'];
+
+  const quickActions = [
+    { name: 'search', label: 'Search Events', icon: 'search', href: '/search' },
+    { name: 'graph', label: 'Knowledge Graph', icon: 'network', href: '/knowledge-graph' },
+    { name: 'districts', label: 'Explore Districts', icon: 'map', href: '/districts' }
+  ];
 
   return (
-    <AppLayout>
-      <div className="flex flex-col h-full bg-slate-950 text-slate-100 min-h-[calc(100vh-4rem)] p-4 sm:p-6 space-y-6 font-sans">
-        
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+      <Navbar />
+
+      <div className="pt-24 pb-16 max-w-6xl mx-auto px-4 sm:px-6">
         {/* Header */}
-        <div className="flex items-center gap-2 select-none border-b border-slate-900 pb-3">
-          <Calendar className="h-5 w-5 text-primary animate-pulse" />
-          <div className="space-y-0.5">
-            <h1 className="text-xl font-bold text-foreground font-serif">Historical Timeline Engine</h1>
-            <p className="text-xs text-slate-400">
-              Audit chronological milestones compiled dynamically from registry records, date annotations, and metadata.
-            </p>
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="h-6 w-6 text-amber-400" />
+            <Badge variant="outline" className="border-amber-500/30 text-amber-400">Timeline</Badge>
           </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Karnataka Historical Timeline</h1>
+          <p className="text-slate-400">Explore key events, births, deaths, and milestones from Karnataka's rich history</p>
         </div>
 
-        {/* Demo Watermark (Safeguard 9) */}
-        {isDemo && (
-          <div className="bg-amber-500/10 border border-amber-500/25 text-amber-500 text-[10px] px-3 py-1.5 rounded-md font-mono flex items-center gap-1.5 w-fit select-none">
-            <Sparkles className="h-4 w-4 animate-spin text-amber-500" />
-            <span>Virtual Timeline Demo: Displaying mocked historical events from Karnataka state.</span>
+        {/* Quick Actions */}
+        <div className="mb-6">
+          <QuickActions actions={quickActions} variant="compact" />
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {eventTypes.map(type => (
+            <Button
+              key={type}
+              variant={filter === type ? 'default' : 'outline'}
+              size="sm"
+              className={filter === type ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'border-slate-700 text-slate-400 hover:bg-slate-800'}
+              onClick={() => setFilter(type)}
+            >
+              {type === 'all' ? 'All Events' : type.charAt(0).toUpperCase() + type.slice(1)}
+            </Button>
+          ))}
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div className="space-y-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-12 w-12 rounded-full bg-slate-800" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4 bg-slate-800" />
+                  <Skeleton className="h-3 w-1/2 bg-slate-800" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Filter Toolbar */}
-        <div className="bg-slate-900/35 border border-slate-800 rounded-xl p-4 space-y-3 shadow-xl backdrop-blur-md select-none">
-          <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-slate-300 font-mono tracking-wider">
-            <Filter className="h-4 w-4 text-primary" />
-            FILTER CHRONOLOGICAL MILESTONES
+        {/* Error */}
+        {error && !loading && (
+          <Card className="border-red-500/30 bg-red-950/20">
+            <CardContent className="p-6 text-center">
+              <p className="text-red-400">{error}</p>
+              <Button onClick={() => window.location.reload()} variant="outline" className="mt-4 border-red-500/30 text-red-400">
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Timeline */}
+        {!loading && !error && (
+          <div className="space-y-12">
+            {Object.entries(groupedByEra).map(([era, eraEvents]) => (
+              <div key={era}>
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-amber-400" />
+                  {era}
+                </h2>
+                <div className="space-y-4">
+                  {eraEvents.map((event, i) => (
+                    <Card key={i} className="border border-slate-800/50 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl transition-all duration-300 hover:border-amber-500/30">
+                      <CardContent className="p-4 flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-amber-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/20">
+                              {event.event_type}
+                            </Badge>
+                            <span className="text-xs text-slate-500">
+                              {new Date(event.event_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            </span>
+                            {event.importance >= 8 && (
+                              <Badge variant="secondary" className="text-xs bg-red-500/10 text-red-400 border-red-500/20">
+                                Major Event
+                              </Badge>
+                            )}
+                          </div>
+                          <h3 className="text-sm font-bold text-white mb-1">{event.title}</h3>
+                          {event.description && (
+                            <p className="text-xs text-slate-400 line-clamp-2">{event.description}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            {event.entities && (
+                              <Link href={`/knowledge-graph?entity=${encodeURIComponent(event.entities.name)}`}>
+                                <Badge variant="outline" className="text-xs border-slate-700 text-slate-400 hover:bg-slate-800 transition-colors">
+                                  <Network className="h-3 w-3 mr-1" />
+                                  {event.entities.name}
+                                </Badge>
+                              </Link>
+                            )}
+                            {event.archives && (
+                              <Link href={`/documents/${event.archive_id}`}>
+                                <Badge variant="outline" className="text-xs border-slate-700 text-slate-400 hover:bg-slate-800 transition-colors">
+                                  <Search className="h-3 w-3 mr-1" />
+                                  {event.archives.title}
+                                </Badge>
+                              </Link>
+                            )}
+                            {event.districts && (
+                              <Link href={`/districts/${event.district_id}`}>
+                                <Badge variant="outline" className="text-xs border-slate-700 text-slate-400 hover:bg-slate-800 transition-colors">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  {event.districts.name}
+                                </Badge>
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-slate-600 flex-shrink-0" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {/* Search */}
-            <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
-              <Input
-                placeholder="Search event names, figures, records..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-8.5 bg-slate-950 border-slate-850 text-slate-200 placeholder:text-slate-655 focus-visible:ring-primary text-xs"
-              />
-            </div>
-
-            {/* District */}
-            <select
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              className="bg-slate-950 border border-slate-850 text-slate-300 text-xs rounded-md px-2 py-1 h-8.5 focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="all">All Districts</option>
-              {KARNATAKA_DISTRICTS.map(d => (
-                <option key={d.id} value={d.name}>{d.name}</option>
-              ))}
-            </select>
-
-            {/* Category */}
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="bg-slate-950 border border-slate-850 text-slate-300 text-xs rounded-md px-2 py-1 h-8.5 focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="all">All Categories</option>
-              {ARCHIVE_CATEGORIES.map(c => (
-                <option key={c.id} value={c.slug}>{c.name}</option>
-              ))}
-            </select>
-
-            {/* Years range */}
-            <div className="flex items-center gap-1.5">
-              <Input
-                placeholder="From"
-                type="number"
-                value={yearFrom}
-                onChange={(e) => setYearFrom(e.target.value)}
-                className="h-8.5 bg-slate-950 border-slate-850 text-slate-200 placeholder:text-slate-655 focus-visible:ring-primary text-xs w-full"
-              />
-              <span className="text-slate-600 text-xs">-</span>
-              <Input
-                placeholder="To"
-                type="number"
-                value={yearTo}
-                onChange={(e) => setYearTo(e.target.value)}
-                className="h-8.5 bg-slate-950 border-slate-850 text-slate-200 placeholder:text-slate-655 focus-visible:ring-primary text-xs w-full"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Timeline List Content */}
-        <div className="flex-1 relative">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center p-16 gap-3">
-              <Loader2 className="h-7 w-7 animate-spin text-primary" />
-              <span className="text-xs text-slate-500 font-mono">Compiling timelines...</span>
-            </div>
-          ) : (
-            <TimelineList events={events} />
-          )}
-        </div>
-
+        )}
       </div>
-    </AppLayout>
+    </div>
   );
 }

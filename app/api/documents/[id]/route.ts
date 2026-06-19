@@ -173,51 +173,85 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       })).filter(e => e.entity_name) || [];
     }
 
-    // 10. Load related records, respecting RLS and visibility (Safeguard 6)
+    // 10. Load related records via entity links (Interlinking)
     let relatedDocs: any[] = [];
+    let relatedEntities: any[] = [];
     try {
-      let relatedQuery = supabase.from('documents').select('*').neq('id', id);
-
-      if (role === 'admin') {
-        // Admin sees all
-      } else if (user) {
-        // Authenticated user
-        if (['researcher', 'archivist'].includes(role)) {
-          relatedQuery = relatedQuery.or(`visibility.eq.public,visibility.eq.restricted,uploaded_by.eq.${user.id}`);
-        } else {
-          relatedQuery = relatedQuery.or(`visibility.eq.public,uploaded_by.eq.${user.id}`);
-        }
-      } else {
-        // Guest: completed public records only
-        relatedQuery = relatedQuery.eq('visibility', 'public').eq('status', 'Completed');
-      }
-
-      // Add matching criteria for relevance
-      const filters: string[] = [];
-      if (doc.district) filters.push(`district.eq.${doc.district}`);
-      if (doc.category) filters.push(`category.eq.${doc.category}`);
-      if (doc.year) {
-        filters.push(`and(year.gte.${doc.year - 20},year.lte.${doc.year + 20})`);
-      }
-
-      if (filters.length > 0) {
-        relatedQuery = relatedQuery.or(filters.join(','));
-      }
-
-      const { data: related } = await relatedQuery.limit(6);
+      // 10a. Get entity IDs from document_entity_links
+      const { data: entityLinks } = await supabase
+        .from('document_entity_links')
+        .select('entity_id')
+        .eq('archive_id', id);
       
-      relatedDocs = (related || []).map((item) => {
-        const reasons = [];
-        if (item.district === doc.district) reasons.push('same district');
-        if (item.category === doc.category) reasons.push('same category');
-        if (item.year && doc.year && Math.abs(item.year - doc.year) <= 20) reasons.push('similar era');
-        return {
-          ...item,
-          relevance_reason: `Matches ${reasons.join(', ')}`
-        };
-      });
+      const entityIds = entityLinks?.map(l => l.entity_id) || [];
+      
+      // 10b. Fetch related documents via shared entities
+      if (entityIds.length > 0) {
+        const { data: relatedLinks } = await supabase
+          .from('document_entity_links')
+          .select('archive_id, entities (id, name, entity_type)')
+          .in('entity_id', entityIds)
+          .neq('archive_id', id)
+          .limit(10);
+        
+        const relatedArchiveIds = [...new Set((relatedLinks || []).map((l: any) => l.archive_id))];
+        
+        if (relatedArchiveIds.length > 0) {
+          let relatedQuery = supabase.from('archives').select('*').in('id', relatedArchiveIds);
+          
+          if (role !== 'admin') {
+            relatedQuery = relatedQuery.eq('status', 'active');
+          }
+          
+          const { data: related } = await relatedQuery.limit(6);
+          
+          relatedDocs = (related || []).map((item: any) => {
+            const sharedEntity = (relatedLinks || []).find((l: any) => l.archive_id === item.id);
+            const entityObj = sharedEntity?.entities as { name?: string } | undefined;
+            const entityName = entityObj?.name || 'Related';
+            return {
+              ...item,
+              relevance_reason: sharedEntity
+                ? `Shares entity: ${entityName}`
+                : 'Related document'
+            };
+          });
+        }
+        
+        // 10c. Fetch full entity details for the sidebar
+        const { data: fullEntities } = await supabase
+          .from('entities')
+          .select('id, name, entity_type, name_kannada, description, birth_date, death_date, entity_metadata')
+          .in('id', entityIds);
+        relatedEntities = fullEntities || [];
+      }
     } catch (err) {
-      console.warn('Failed to load related documents safely:', err);
+      console.warn('Failed to load related documents via entities:', err);
+    }
+    
+    // Fallback: If no entity-based related docs, try category/district fallback
+    if (relatedDocs.length === 0) {
+      try {
+        let fallbackQuery = supabase.from('archives').select('*').neq('id', id);
+        if (role !== 'admin') {
+          fallbackQuery = fallbackQuery.eq('status', 'active');
+        }
+        const filters: string[] = [];
+        if (doc.district) filters.push(`district.eq.${doc.district}`);
+        if (doc.category) filters.push(`category.eq.${doc.category}`);
+        if (filters.length > 0) {
+          fallbackQuery = fallbackQuery.or(filters.join(','));
+        }
+        const { data: fallback } = await fallbackQuery.limit(6);
+        relatedDocs = (fallback || []).map((item: any) => {
+          const reasons = [];
+          if (item.district === doc.district) reasons.push('same district');
+          if (item.category === doc.category) reasons.push('same category');
+          return { ...item, relevance_reason: `Matches ${reasons.join(', ')}` };
+        });
+      } catch (err) {
+        console.warn('Fallback related docs failed:', err);
+      }
     }
 
     return NextResponse.json({
@@ -231,7 +265,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       chunks: chunks || [],
       entities: entities || [],
       related: relatedDocs,
-      userRole: role
+      related_entities: relatedEntities,
+      userRole: role,
+      interlinking: {
+        knowledge_graph: { entities: relatedEntities.slice(0, 5) },
+        chat: { document_id: id, context: doc.title },
+        timeline: { year: doc.year, entity_names: relatedEntities.map(e => e.name).slice(0, 3) },
+        search: { district: doc.district, category: doc.category }
+      }
     });
 
   } catch (error) {

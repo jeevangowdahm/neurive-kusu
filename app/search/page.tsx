@@ -2,10 +2,7 @@
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  Search, SlidersHorizontal, Sparkles, Mic, ChevronLeft, 
-  ChevronRight, Brain, Lightbulb, Clock, Info, HelpCircle, X, Loader as Loader2
-} from 'lucide-react';
+import { Search, SlidersHorizontal, Sparkles, Mic, ChevronLeft, ChevronRight, Brain, Lightbulb, Clock, Info, CircleHelp as HelpCircle, X, Loader as Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +61,19 @@ function SearchPageContent() {
     districtsCount: 0,
     entitiesCount: 0,
     isMock: false
+  });
+
+  // Interlinking data from search API
+  const [interlinking, setInterlinking] = useState<{
+    related_entities: any[];
+    related_districts: any[];
+    related_categories: any[];
+    suggested_features: any[];
+  }>({
+    related_entities: [],
+    related_districts: [],
+    related_categories: [],
+    suggested_features: []
   });
 
   // Filter sidebar states
@@ -193,6 +203,11 @@ function SearchPageContent() {
           entitiesCount: resJson.meta?.entities_count || 0,
           isMock: !!resJson.meta?.is_mock
         });
+        
+        // Set interlinking data from search response
+        if (resJson.interlinking) {
+          setInterlinking(resJson.interlinking);
+        }
       }
     } catch (err) {
       console.error('Hybrid Search error:', err);

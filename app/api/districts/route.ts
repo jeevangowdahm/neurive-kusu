@@ -144,10 +144,48 @@ export async function GET(req: NextRequest) {
       }
     });
 
+    // 4. Interlinking: Fetch district_statistics for real stats
+    let districtStats: any[] = [];
+    try {
+      const { data: stats } = await supabase
+        .from('district_statistics')
+        .select(`
+          district_id,
+          document_count,
+          category_distribution,
+          top_entities,
+          year_range,
+          popular_searches,
+          view_count
+        `);
+      districtStats = stats || [];
+    } catch (statsErr) {
+      console.warn('Failed to fetch district statistics:', statsErr);
+    }
+
+    // 5. Merge district_statistics with district data
+    const enrichedDistricts = districtsData.map((dist: any) => {
+      const stat = districtStats.find((s: any) => s.district_id === dist.id);
+      return {
+        ...dist,
+        real_document_count: stat?.document_count || 0,
+        category_distribution: stat?.category_distribution || {},
+        top_entities: stat?.top_entities || [],
+        year_range: stat?.year_range || { from: dist.oldest_year || 0, to: dist.newest_year || 0 },
+        popular_searches: stat?.popular_searches || [],
+        interlinking: {
+          search_url: `/search?district=${encodeURIComponent(dist.name)}`,
+          timeline_url: `/timeline?district=${encodeURIComponent(dist.name)}`,
+          graph_url: `/knowledge-graph?district=${encodeURIComponent(dist.name)}`,
+          chat_url: `/chat?district=${encodeURIComponent(dist.name)}`
+        }
+      };
+    });
+
     return NextResponse.json({
       success: true,
       isDemo: isDbEmpty,
-      districts: districtsData
+      districts: enrichedDistricts
     });
 
   } catch (error) {

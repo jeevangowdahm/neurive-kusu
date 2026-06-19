@@ -387,6 +387,66 @@ export async function POST(req: NextRequest) {
     const uniqueDistricts = Array.from(new Set(searchResults.map(r => r.district))).filter(Boolean);
     const matchedEntitiesCount = searchResults.filter(r => r.entity_score > 0).length;
 
+    // 6. Interlinking: Fetch related entities for top results
+    const topDocumentIds = searchResults.slice(0, 5).map(r => r.document_id).filter(Boolean);
+    let relatedEntities: any[] = [];
+    let relatedDistricts: any[] = [];
+    let relatedCategories: any[] = [];
+    
+    if (topDocumentIds.length > 0) {
+      try {
+        // Fetch entities linked to top documents
+        const { data: entityLinks } = await supabase
+          .from('document_entity_links')
+          .select('entity_id, mention_count, entities (id, name, entity_type, name_kannada)')
+          .in('archive_id', topDocumentIds)
+          .limit(10);
+        
+        relatedEntities = (entityLinks || []).map((link: any) => ({
+          id: link.entities?.id,
+          name: link.entities?.name,
+          name_kannada: link.entities?.name_kannada,
+          entity_type: link.entities?.entity_type,
+          mention_count: link.mention_count
+        })).filter((e: any) => e.id && e.name);
+
+        // Fetch related districts from results
+        const { data: districtData } = await supabase
+          .from('districts')
+          .select('id, name, name_kannada, division')
+          .in('name', uniqueDistricts.slice(0, 5));
+        relatedDistricts = districtData || [];
+
+        // Fetch related categories from results
+        const uniqueCategories = Array.from(new Set(searchResults.map(r => r.category))).filter(Boolean);
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id, name, name_kannada, slug, description')
+          .in('name', uniqueCategories.slice(0, 5));
+        relatedCategories = categoryData || [];
+      } catch (interlinkErr) {
+        console.warn('Failed to fetch interlinking data:', interlinkErr);
+      }
+    }
+
+    // 7. Interlinking: Update popular queries
+    try {
+      await supabase
+        .from('popular_queries')
+        .upsert({
+          query: safeQuery,
+          query_normalized: safeQuery.toLowerCase().replace(/[^a-z0-9\s]/g, ''),
+          search_count: 1,
+          result_count: totalResults,
+          avg_relevance_score: topScore
+        }, {
+          onConflict: 'query_normalized',
+          ignoreDuplicates: false
+        });
+    } catch (popErr) {
+      console.warn('Failed to update popular queries:', popErr);
+    }
+
     return NextResponse.json({
       success: true,
       data: searchResults,
@@ -401,6 +461,16 @@ export async function POST(req: NextRequest) {
         districts_count: uniqueDistricts.length,
         entities_count: matchedEntitiesCount,
         is_mock: isMockMode
+      },
+      interlinking: {
+        related_entities: relatedEntities,
+        related_districts: relatedDistricts,
+        related_categories: relatedCategories,
+        suggested_features: [
+          { name: 'knowledge_graph', label: 'Explore Knowledge Graph', icon: 'network' },
+          { name: 'chat', label: 'Ask AI about results', icon: 'message' },
+          { name: 'timeline', label: 'View Timeline', icon: 'calendar' }
+        ]
       }
     });
 

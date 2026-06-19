@@ -54,6 +54,7 @@ export class KnowledgeGraphService {
     edges: GraphEdge[];
     timeline_events: any[];
     stats: any;
+    interlinking?: any;
   }> {
     try {
       const entityParam = filters?.entity || '';
@@ -321,13 +322,56 @@ export class KnowledgeGraphService {
         documentsRepresented: representedDocCount
       };
 
+      // 7. Interlinking: Fetch related documents for entity nodes
+      const interlinking: any = {
+        related_documents: {},
+        suggested_features: [
+          { name: 'search', label: 'Search Documents', icon: 'search' },
+          { name: 'chat', label: 'Ask AI about Entity', icon: 'message' },
+          { name: 'timeline', label: 'View Timeline', icon: 'calendar' },
+          { name: 'district_explorer', label: 'Explore District', icon: 'map' }
+        ]
+      };
+      
+      try {
+        const entityNodeIds = nodes.filter(n => n.type !== 'Document').map(n => n.id);
+        if (entityNodeIds.length > 0) {
+          const { data: docLinks } = await supabaseClient
+            .from('document_entity_links')
+            .select('entity_id, archive_id, mention_count, archives (id, title, year, district, status)')
+            .in('entity_id', entityNodeIds)
+            .limit(30);
+          
+          if (docLinks) {
+            for (const link of docLinks) {
+              const eid = link.entity_id;
+              if (!interlinking.related_documents[eid]) {
+                interlinking.related_documents[eid] = [];
+              }
+              if (link.archives) {
+                interlinking.related_documents[eid].push({
+                  id: link.archives.id,
+                  title: link.archives.title,
+                  year: link.archives.year,
+                  district: link.archives.district,
+                  mention_count: link.mention_count
+                });
+              }
+            }
+          }
+        }
+      } catch (linkErr) {
+        console.warn('Failed to fetch interlinking documents:', linkErr);
+      }
+
       return {
         success: true,
         isDemo: false,
         nodes,
         edges: filteredEdges,
         timeline_events,
-        stats
+        stats,
+        interlinking
       };
     } catch (err) {
       console.error('Failed to get graph data:', err);
