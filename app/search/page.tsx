@@ -178,7 +178,6 @@ function SearchPageContent() {
           limit: 20,
           page: searchPage,
           filters,
-          apiKey: activeKey || undefined,
           model: selectedModel,
           version: geminiVersion
         })
