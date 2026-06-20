@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Search, ArrowRight, Database, Map, FileText, Sparkles, Upload, MessageSquare, Shield, Network, Zap, Eye, Brain, TrendingUp, Calendar, MapPin, Star, ExternalLink, Landmark } from 'lucide-react';
+import { Search, ArrowRight, Database, Map, FileText, Sparkles, Upload, MessageSquare, Shield, Network, Zap, Eye, Brain, TrendingUp, Calendar, MapPin, Star, ExternalLink, Landmark, Globe, BarChart3, Bot, Layers, BookOpen, FileImage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,11 +44,11 @@ export default function HomePageClient({ data }: HomePageClientProps) {
   ];
 
   const quickAccess = [
-    { href: '/search', icon: Search, title: 'Hybrid Search', desc: 'AI-Powered Query Engine', color: 'blue' as const },
-    { href: '/knowledge-graph', icon: Network, title: 'Knowledge Graph', desc: 'Entity Relationships', color: 'emerald' as const },
-    { href: '/upload', icon: Upload, title: 'Ingestion Desk', desc: 'Upload Archives', color: 'amber' as const },
-    { href: '/districts', icon: Map, title: 'Districts Explorer', desc: '31 Karnataka Districts', color: 'rose' as const },
-    { href: '/chat', icon: MessageSquare, title: 'RAG Chat', desc: 'Talk to Archives', color: 'purple' as const }
+    { href: '/search', icon: Search, title: 'Search Archives', desc: 'Hybrid AI Search', color: 'blue' as const },
+    { href: '/knowledge-graph', icon: Network, title: 'Explore Graph', desc: 'Entity Relationships', color: 'emerald' as const },
+    { href: '/upload', icon: Upload, title: 'Upload Document', desc: 'Ingestion Desk', color: 'amber' as const },
+    { href: '/districts', icon: Map, title: 'District Explorer', desc: '31 Karnataka Districts', color: 'rose' as const },
+    { href: '/chat', icon: MessageSquare, title: 'AI Archivist', desc: 'RAG Chat & Copilot', color: 'purple' as const }
   ];
 
   const features = [
@@ -107,18 +107,35 @@ export default function HomePageClient({ data }: HomePageClientProps) {
               Query {stats.totalDocuments}+ archival records in under 50ms.
             </p>
 
-            <div className={`pt-4 flex flex-col sm:flex-row justify-center gap-4 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white rounded-xl px-10 py-6 font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300">
+            <div className={`pt-4 flex flex-wrap justify-center gap-3 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white rounded-xl px-8 py-6 font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300">
                 <Link href="/search">
                   <Search className="mr-2 h-5 w-5" />
                   Search Archives
-                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl px-10 py-6 font-bold text-base backdrop-blur-xl transition-all duration-300">
-                <Link href="/demo">
+              <Button asChild variant="outline" size="lg" className="border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:text-amber-200 rounded-xl px-8 py-6 font-bold text-base backdrop-blur-xl transition-all duration-300">
+                <Link href="/search?q=sample">
                   <Eye className="mr-2 h-5 w-5" />
-                  Watch Demo
+                  Try Sample Collection
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl px-8 py-6 font-bold text-base backdrop-blur-xl transition-all duration-300">
+                <Link href="/upload">
+                  <Upload className="mr-2 h-5 w-5" />
+                  Upload Document
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl px-8 py-6 font-bold text-base backdrop-blur-xl transition-all duration-300">
+                <Link href="/knowledge-graph">
+                  <Network className="mr-2 h-5 w-5" />
+                  Explore Graph
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl px-8 py-6 font-bold text-base backdrop-blur-xl transition-all duration-300">
+                <Link href="/chat">
+                  <MessageSquare className="mr-2 h-5 w-5" />
+                  Open AI Archivist
                 </Link>
               </Button>
             </div>
@@ -402,22 +419,218 @@ export default function HomePageClient({ data }: HomePageClientProps) {
         </div>
       </section>
 
+      {/* Problem Statement */}
+      <section className="py-24 border-t border-slate-900">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 border-rose-500/30 text-rose-400">The Challenge</Badge>
+            <h2 className="text-3xl font-bold text-white mb-4">Millions of Records, Trapped in Obscurity</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border border-slate-800/50 bg-slate-900/30 backdrop-blur-xl p-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-7 w-7 text-blue-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Disconnected Archives</h3>
+              <p className="text-sm text-slate-400">Karnataka has millions of physical and partially digitized historical records scattered across districts, temples, and government offices.</p>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 backdrop-blur-xl p-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="h-7 w-7 text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Multilingual & Scanned</h3>
+              <p className="text-sm text-slate-400">Records are in Kannada, English, Sanskrit, and Persian — often scanned, handwritten, and difficult to search with traditional tools.</p>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 backdrop-blur-xl p-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                <Search className="h-7 w-7 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Researcher Frustration</h3>
+              <p className="text-sm text-slate-400">Historians, lawyers, and genealogists need source-grounded answers with citations — not guesswork across disconnected archives.</p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Solution Workflow */}
+      <section className="py-24 border-t border-slate-900 bg-slate-950/50">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 border-emerald-500/30 text-emerald-400">The Solution</Badge>
+            <h2 className="text-3xl font-bold text-white mb-4">End-to-End AI Archival Pipeline</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">From raw manuscript to searchable, citable, graph-linked knowledge</p>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-2">
+            {[
+              { label: 'Upload', icon: Upload, color: 'blue' },
+              { label: 'OCR', icon: Eye, color: 'emerald' },
+              { label: 'Chunking', icon: Layers, color: 'amber' },
+              { label: 'Embeddings', icon: Zap, color: 'rose' },
+              { label: 'Hybrid Search', icon: Search, color: 'purple' },
+              { label: 'RAG Chat', icon: MessageSquare, color: 'cyan' },
+              { label: 'Citations', icon: BookOpen, color: 'orange' },
+              { label: 'Knowledge Graph', icon: Network, color: 'teal' },
+              { label: 'AI Archivist', icon: Bot, color: 'indigo' },
+              { label: 'Analytics', icon: BarChart3, color: 'pink' }
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-${step.color}-500/10 border border-${step.color}-500/20 text-${step.color}-400 text-sm font-semibold`}>
+                  <step.icon className="h-4 w-4" />
+                  {step.label}
+                </div>
+                {i < 9 && <ArrowRight className="h-4 w-4 text-slate-700 hidden md:block" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Cards */}
+      <section className="py-24 border-t border-slate-900">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 border-cyan-500/30 text-cyan-400">Features</Badge>
+            <h2 className="text-3xl font-bold text-white mb-4">Platform Capabilities</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: Eye, title: 'Bilingual OCR', desc: 'Kannada, English, Sanskrit text extraction with confidence scoring', color: 'blue' },
+              { icon: Search, title: 'Hybrid Search', desc: 'Semantic + keyword + metadata + entity scoring across all records', color: 'emerald' },
+              { icon: MessageSquare, title: 'RAG Chatbot', desc: 'Source-grounded conversational AI with inline citations', color: 'purple' },
+              { icon: Bot, title: 'Scribal AI Copilot', desc: 'Autonomous manuscript ingestion, transcription, and ledger commit', color: 'amber' },
+              { icon: Network, title: 'Knowledge Graph', desc: 'Entity-relationship mapping across documents, districts, and time', color: 'rose' },
+              { icon: Map, title: 'District Explorer', desc: 'Browse 31 Karnataka districts with historical record counts', color: 'cyan' },
+              { icon: Globe, title: 'Real Public Ingestion', desc: 'Wikipedia, Wikisource, Internet Archive, government PDFs', color: 'teal' },
+              { icon: BarChart3, title: 'Retrieval Testing', desc: 'Benchmark and evaluate search quality with admin analytics', color: 'indigo' },
+              { icon: FileImage, title: 'PDF Archive Viewer', desc: 'Zoom, navigate, OCR text, AI summary, citations, and annotations', color: 'orange' }
+            ].map((f, i) => (
+              <Card key={i} className="border border-slate-800/50 bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-xl transition-all duration-300 hover:border-slate-600/50">
+                <CardContent className="p-6">
+                  <div className={`w-10 h-10 rounded-lg bg-${f.color}-500/10 border border-${f.color}-500/20 flex items-center justify-center mb-4`}>
+                    <f.icon className={`h-5 w-5 text-${f.color}-400`} />
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-2">{f.title}</h3>
+                  <p className="text-sm text-slate-400">{f.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dataset Summary */}
+      <section className="py-24 border-t border-slate-900 bg-slate-950/50">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-4 border-amber-500/30 text-amber-400">Dataset</Badge>
+            <h2 className="text-3xl font-bold text-white mb-4">Archive Sample Collection</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">A comprehensive sample corpus for testing and demonstration. All records are synthetic sample data, not verified real public archives.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-blue-400 mb-1">10,000</div>
+              <div className="text-sm text-slate-400">Archive Sample Records</div>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-emerald-400 mb-1">200</div>
+              <div className="text-sm text-slate-400">PDF-Backed Records</div>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-amber-400 mb-1">31</div>
+              <div className="text-sm text-slate-400">Karnataka Districts</div>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-rose-400 mb-1">16</div>
+              <div className="text-sm text-slate-400">Archive Categories</div>
+            </Card>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-purple-400 mb-1">500+</div>
+              <div className="text-sm text-slate-400">Years Covered</div>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-cyan-400 mb-1">6</div>
+              <div className="text-sm text-slate-400">Languages</div>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-teal-400 mb-1">200</div>
+              <div className="text-sm text-slate-400">Research Starters</div>
+            </Card>
+            <Card className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+              <div className="text-3xl font-bold text-indigo-400 mb-1">50</div>
+              <div className="text-sm text-slate-400">Chat Prompts</div>
+            </Card>
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-xs text-slate-500">Sources: Wikipedia, Wikisource, Internet Archive, Government PDFs, and generated sample data</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Tech Stack */}
+      <section className="py-24 border-t border-slate-900">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
+          <Badge variant="outline" className="mb-4 border-indigo-500/30 text-indigo-400">Built With</Badge>
+          <h2 className="text-3xl font-bold text-white mb-8">Technology Stack</h2>
+          <div className="flex flex-wrap justify-center gap-3">
+            {['Next.js 13', 'TypeScript', 'Tailwind CSS', 'shadcn/ui', 'Supabase', 'PostgreSQL', 'pgvector', 'RAG', 'OCR', 'Gemini', 'OpenAI', 'Deno'].map((tech, i) => (
+              <Badge key={i} variant="secondary" className="bg-slate-800 text-slate-300 border-slate-700 text-sm px-4 py-2">
+                {tech}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Credits */}
+      <section className="py-24 border-t border-slate-900 bg-slate-950/50">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 text-center">
+          <Badge variant="outline" className="mb-4 border-rose-500/30 text-rose-400">Team</Badge>
+          <h2 className="text-3xl font-bold text-white mb-8">Neurive Team</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[
+              { name: 'Jeevan Gowda H M', role: 'Lead Architect', color: 'blue' },
+              { name: 'Niranjan', role: 'Full Stack Developer', color: 'emerald' },
+              { name: 'Koushik', role: 'AI Engineer', color: 'purple' },
+              { name: 'Kushwanth', role: 'UI/UX Designer', color: 'amber' },
+              { name: 'Milan', role: 'Database Specialist', color: 'rose' },
+              { name: 'Kushal', role: 'DevOps Engineer', color: 'cyan' }
+            ].map((member, i) => (
+              <Card key={i} className="border border-slate-800/50 bg-slate-900/30 p-6 text-center">
+                <div className={`w-12 h-12 rounded-full bg-${member.color}-500/10 border border-${member.color}-500/20 flex items-center justify-center mx-auto mb-3`}>
+                  <span className={`text-lg font-bold text-${member.color}-400`}>{member.name.charAt(0)}</span>
+                </div>
+                <h3 className="text-sm font-bold text-white">{member.name}</h3>
+                <p className="text-xs text-slate-400 mt-1">{member.role}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-24 border-t border-slate-900">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Explore Karnataka&apos;s History?</h2>
           <p className="text-lg text-slate-400 mb-8 max-w-2xl mx-auto">
-            Search through millions of archival records, digitized manuscripts, and historical documents spanning 500+ years of Karnataka&apos;s rich heritage.
+            Search through the Archive Sample Collection, explore the Knowledge Graph, and chat with the AI Archivist.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white rounded-xl px-12 py-7 font-bold text-base">
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white rounded-xl px-10 py-7 font-bold text-base">
               <Link href="/search">
                 <Search className="mr-2 h-5 w-5" />
                 Start Searching
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 rounded-xl px-12 py-7 font-bold text-base">
+            <Button asChild variant="outline" size="lg" className="border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 rounded-xl px-10 py-7 font-bold text-base">
+              <Link href="/search?q=sample">
+                <Eye className="mr-2 h-5 w-5" />
+                Try Sample Collection
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 rounded-xl px-10 py-7 font-bold text-base">
               <Link href="/auth/login">
                 <Shield className="mr-2 h-5 w-5" />
                 Officer Login

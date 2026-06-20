@@ -9,6 +9,11 @@ Neurive is a production-grade digital archive intelligence platform built specif
 4. **Knowledge Graph & Timeline Engine:** Interactive force-directed map plotting events, places, and dynastic links.
 5. **Geographical Division Cockpit:** Visual map-based explorer linking Karnataka divisions, districts, and categories.
 6. **Algorithmic Evaluation Ground:** Automated testing suite evaluating search engines on MRR, Recall@10, and Precision@5 metrics.
+7. **AI Archivist Agent / Scribal AI Copilot:** Autonomous manuscript ingestion desk with OCR, chunking, embedding, entity extraction, and ledger commit.
+8. **Google OAuth Authentication:** Secure login with email/password or Google OAuth.
+9. **10,000 Archive Sample Collection:** Synthetic corpus for testing search, RAG, graph, and analytics workflows.
+10. **200 PDF Archive Collection:** PDF-backed sample records with OCR text, chunks, and citations.
+11. **Real Public Source Ingestion:** Wikipedia, Wikisource, Internet Archive, and government PDF ingestion support.
 
 ---
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 
 const ADMIN_EMAILS = [
   'jeevangowdahm6@gmail.com',
@@ -29,13 +29,23 @@ const PROTECTED_ROUTES = [
 ];
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  let res = NextResponse.next();
+  
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name) { return req.cookies.get(name)?.value; },
+        set(name, value, options) { res.cookies.set({ name, value, ...options }); },
+        remove(name, options) { res.cookies.set({ name, value: '', ...options }); }
+      }
+    }
+  );
   
   const { data: { session } } = await supabase.auth.getSession();
   const path = req.nextUrl.pathname;
   
-  // Check if route is admin-only
   const isAdminRoute = ADMIN_ROUTES.some(route => path === route || path.startsWith(`${route}/`));
   const isProtectedRoute = PROTECTED_ROUTES.some(route => path === route || path.startsWith(`${route}/`));
   
