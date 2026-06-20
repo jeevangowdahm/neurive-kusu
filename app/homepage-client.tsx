@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Search, ArrowRight, Database, Map, FileText, Sparkles, Upload, MessageSquare, Shield, Network, Zap, Eye, Brain, TrendingUp, Calendar, MapPin, Star, ExternalLink, Landmark, Globe, BarChart3, Bot, Layers, BookOpen, FileImage } from 'lucide-react';
+import { Search, ArrowRight, Database, Map, FileText, Sparkles, Upload, MessageSquare, Shield, Network, Zap, Eye, Brain, TrendingUp, Calendar, MapPin, Star, ExternalLink, Landmark, Globe, ChartBar as BarChart3, Bot, Layers, BookOpen, FileImage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
